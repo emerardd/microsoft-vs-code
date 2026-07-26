@@ -146,7 +146,7 @@ Survive increasingly difficult waves of coding errors and deploy your project! E
 
 ```bash
 # Clone the repository
-git clone https://github.com/Dreamer431/microsoft-vs-code.git
+git clone https://github.com/emerardd/microsoft-vs-code.git
 cd microsoft-vs-code
 
 # Install dependencies

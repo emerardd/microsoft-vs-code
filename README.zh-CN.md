@@ -148,7 +148,7 @@ ESC / P    → 暂停游戏
 
 ```bash
 # 克隆仓库
-git clone https://github.com/Dreamer431/microsoft-vs-code.git
+git clone https://github.com/emerardd/microsoft-vs-code.git
 cd microsoft-vs-code
 
 # 安装依赖
