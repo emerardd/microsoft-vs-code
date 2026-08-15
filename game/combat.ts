@@ -1,4 +1,4 @@
-import { CANVAS_HEIGHT, COLORS } from '../constants';
+import { CANVAS_HEIGHT, COLORS, COPILOT_BUFF_DURATION } from '../constants';
 import type {
   Enemy,
   EnemyProjectile,
@@ -11,6 +11,7 @@ import { sfxHeal, sfxHit, sfxPlayerHit, sfxPowerUp } from '../utils/audio';
 import { applyDamage } from '../utils/gameLogic';
 import { t } from '../utils/i18n';
 import { intersects } from './collision';
+import { addBossDamageCombo, getComboBonuses, penalizeCombo } from './combo';
 
 interface CombatCallbacks {
   addFloatingText: (
@@ -46,6 +47,20 @@ function markConsumed(entity: { y: number }): void {
   entity.y = CANVAS_HEIGHT + 100;
 }
 
+function showBossComboGain(
+  enemy: Enemy,
+  gained: number,
+  addFloatingText: CombatCallbacks['addFloatingText'],
+): void {
+  if (gained <= 0) return;
+  addFloatingText(
+    enemy.x + enemy.width / 2 - 35,
+    enemy.y + enemy.height,
+    t('bossComboGain', { n: gained }),
+    COLORS.warning,
+  );
+}
+
 export function resolveCombat({
   frameScale,
   player,
@@ -65,7 +80,13 @@ export function resolveCombat({
     if (!intersects(player, enemy)) return;
 
     if (player.shield > 0) {
-      enemy.hp = applyDamage(enemy.hp, 10);
+      const damage = Math.min(enemy.hp, 10);
+      enemy.hp = applyDamage(enemy.hp, damage);
+      showBossComboGain(
+        enemy,
+        addBossDamageCombo(enemy, stats, damage),
+        addFloatingText,
+      );
       createExplosion(enemy.x, enemy.y, '#0db7ed', 5);
       addFloatingText(player.x, player.y - 20, t('blocked'), '#0db7ed');
       handleEnemyDefeat(enemy);
@@ -77,7 +98,7 @@ export function resolveCombat({
     player.hp -= 20;
     player.invulnerable = 60;
     player.weaponLevel = Math.max(1, player.weaponLevel - 1);
-    stats.combo = 0;
+    penalizeCombo(stats);
     createExplosion(player.x, player.y, COLORS.error, 15);
     shake = 15;
     addFloatingText(player.x, player.y - 40, t('exception'), COLORS.error);
@@ -94,7 +115,7 @@ export function resolveCombat({
     } else {
       player.hp -= projectile.damage;
       player.invulnerable = 40;
-      stats.combo = 0;
+      penalizeCombo(stats);
       shake = 15;
       createExplosion(player.x, player.y, COLORS.error, 8);
       addFloatingText(
@@ -116,7 +137,16 @@ export function resolveCombat({
     enemies.forEach((enemy) => {
       if (enemy.hp <= 0 || !intersects(projectile, enemy)) return;
 
-      enemy.hp -= projectile.damage;
+      const damage = Math.min(
+        enemy.hp,
+        projectile.damage * getComboBonuses(stats.combo).damageMultiplier,
+      );
+      enemy.hp -= damage;
+      showBossComboGain(
+        enemy,
+        addBossDamageCombo(enemy, stats, damage),
+        addFloatingText,
+      );
       enemy.flashTimer = 3;
       projectile.damage = 0;
       createExplosion(projectile.x, projectile.y, COLORS.text, 1);
@@ -134,8 +164,8 @@ export function resolveCombat({
       addFloatingText(player.x, player.y, t('speedUp'), powerUp.color);
       sfxPowerUp();
     } else if (powerUp.type === 'COPILOT') {
-      player.weaponLevel = Math.min(5, player.weaponLevel + 1);
-      addFloatingText(player.x, player.y, t('weaponUp'), powerUp.color);
+      player.weaponBuff = COPILOT_BUFF_DURATION;
+      addFloatingText(player.x, player.y, t('weaponBoost'), powerUp.color);
       sfxPowerUp();
     } else if (powerUp.type === 'DOCKER') {
       player.shield = 300;

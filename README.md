@@ -48,26 +48,26 @@ Transform your coding workflow into an epic arcade shooter! Deploy your project 
 
 ### ⚔️ **Intense Gameplay**
 - **9 Unique Enemy Types**: From basic bugs 🪲 to merge conflicts ⚠️ to the terrifying MONOLITH boss
-- **Boss Phase 2**: Monolith enters a rage state below 50% HP — colour shift, faster tracking shot, and a 3-way shotgun burst
-- **Progressive Difficulty**: Waves get harder with smarter enemies and epic boss battles
-- **Combo System**: Chain kills for massive score multipliers
+- **Three-Phase Boss**: Monolith escalates from tracking shots to spread fire, faster movement, tougher minions, and a five-way final-phase burst
+- **Progressive Difficulty**: Enemy health, speed, rewards, spawn pressure, roster, and attacks scale across waves; every clear also grants modest baseline player growth
+- **Combo System**: Combos decay one stack at a time, gain one stack per 5% Boss health dealt, and grant capped score, damage, fire-rate, and ultimate-charge bonuses
 - **Local High Score**: Best run is saved to your browser and shown on the start screen and game-over screen
 - **Power-Ups**:
   - ☕ **Coffee** - Speed boost
-  - 🤖 **GitHub Copilot** - Weapon upgrade
+  - 🤖 **GitHub Copilot** - Temporary +1 weapon tier for 8 seconds
   - 🐳 **Docker** - Temporary shield
   - 🩹 **Hotfix** - Restore 30 HP
 
 ### 📦 **Wave Upgrade System**
-After defeating each Boss a three-choice upgrade screen appears. Pick one permanent enhancement for the rest of the run:
+After defeating each Boss, the player receives +5 max HP, +2 ammo, and +4% base damage, then chooses one smaller permanent enhancement:
 
 | Upgrade | Effect |
 |---------|--------|
 | ⚡ Compiler Upgrade | TypeScript compiler +1 level (more projectiles) |
-| ❤️ Heap Expansion | Max HP +25 and full heal |
-| 📦 Buffer Overflow | Magazine size +10 |
-| ⚙️ Fast GC | Reload time reduced 30% |
-| 🔥 Overclock CPU | Permanent fire rate boost |
+| ❤️ Heap Expansion | Max HP +12 and restore 12 HP |
+| 📦 Buffer Overflow | Magazine size +5 and restore 5 ammo |
+| ⚙️ Fast GC | Reload 10% faster per stack (max 30%) |
+| 🔥 Overclock CPU | Fire 8% faster per stack (max 24%) |
 
 ### 🎨 **Polished Mechanics**
 - **Advanced Weapon System**:
@@ -82,7 +82,7 @@ After defeating each Boss a three-choice upgrade screen appears. Pick one perman
   - Animated combo meter
 - **Readable Combat HUD**:
   - Compact player HP/max display integrated into the canvas HUD
-  - Boss health bar with Phase 2 warning label
+  - Boss health bar with distinct Phase 2 and Phase 3 warning labels
 - **Frame-Rate Independent Movement**: Player, enemies, projectiles, and timers scale with real frame time for consistent gameplay across all machines
 
 ---
@@ -117,18 +117,18 @@ Survive increasingly difficult waves of coding errors and deploy your project! E
 
 | Enemy | Symbol | HP | Points | Behavior |
 |-------|--------|----|----|----------|
-| **Bug** | 🪲 | 10 | 100 | Basic enemy, swarms in numbers |
-| **Syntax Error** | `};` | 20 | 200 | Tanky but slow |
+| **Bug** | 🪲 | 10 | 100 | Gradually homes toward the player |
+| **Syntax Error** | `};` | 20 | 200 | Tanky ranged enemy with aimed shots |
 | **Spaghetti Code** | `goto` | 15 | 150 | Fast and erratic |
-| **Memory Leak** | `malloc()` | 40 | 300 | Grows in size over time |
-| **404 Error** | `404` | 15 | 250 | Extremely fast |
+| **Memory Leak** | `malloc()` | 40 | 300 | Grows in size and health while slowing down |
+| **404 Error** | `404` | 15 | 250 | Ricochets and periodically dashes toward the player |
 | **Merge Conflict** | `<<<<` | 35 | 350 | Splits into smaller enemies on death |
-| **Infinite Loop** | `while(1)` | 25 | 400 | Spiral attack pattern |
-| **Race Condition** | `async` | 20 | 500 | Teleports randomly |
-| **MONOLITH** 👹 | `LegacyWrapper` | 600 | 5000 | Boss: tracking shots, minion spawns, Phase 2 shotgun burst |
+| **Infinite Loop** | `while(1)` | 25 | 400 | Spiral movement with four-way projectile bursts |
+| **Race Condition** | `async` | 20 | 500 | Teleports and attacks from its new position |
+| **MONOLITH** 👹 | `LegacyWrapper` | 600 | 5000 | Three-phase Boss with scaling tracking fire, spread bursts, and minions |
 
 ### Progression System
-- **Weapon Levels**: Collect Copilot power-ups or choose the Compiler Upgrade to level up (max 5)
+- **Weapon Levels**: Compiler Upgrade permanently raises the weapon tier (max 5); Copilot only grants a temporary +1 tier for 8 seconds
 - **Ammo System**: 40 bullets max (expandable), auto-regenerates slowly, reload time 2.5s (reducible)
 - **Special Meter**: Charges by defeating enemies, unleash "Refactor" to clear the screen
 - **Wave System**: Difficulty scales each version release (v1.0, v2.0, v3.0…)
@@ -190,6 +190,7 @@ microsoft-vs-code/
 │   ├── canvasViewport.ts   # Responsive high-DPI Canvas sizing
 │   ├── combat.ts           # Collision effects and damage resolution
 │   ├── collision.ts        # Shared collision primitives
+│   ├── combo.ts            # Combo decay and bonus curves
 │   ├── contentSelection.ts # Enemy, upgrade, and power-up selection
 │   ├── entityFactory.ts    # Enemy, projectile, and effect construction
 │   ├── minimap.ts          # Full-height world-position telemetry

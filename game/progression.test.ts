@@ -47,10 +47,20 @@ describe('enemy defeat progression', () => {
     const result = resolveEnemyDefeat(createEnemy(), context);
 
     expect(result.defeated).toBe(true);
-    expect(context.stats.score).toBe(120);
+    expect(context.stats.score).toBe(110);
     expect(context.stats.combo).toBe(3);
     expect(context.stats.levelProgress).toBe(1);
     expect(context.player.specialCharge).toBe(5);
+  });
+
+  it('caps high-combo scoring while accelerating ultimate charge', () => {
+    const context = createContext();
+    context.stats.combo = 10;
+
+    resolveEnemyDefeat(createEnemy(), context);
+
+    expect(context.stats.score).toBe(150);
+    expect(context.player.specialCharge).toBe(6);
   });
 
   it('splits a merge conflict into two smaller bugs', () => {
@@ -75,6 +85,9 @@ describe('enemy defeat progression', () => {
 
     expect(context.stats.wave).toBe(2);
     expect(context.stats.bossActive).toBe(false);
+    expect(context.player.maxHp).toBe(105);
+    expect(context.player.maxAmmo).toBe(42);
+    expect(context.player.damageMultiplier).toBe(1.04);
     expect(context.player.hp).toBe(context.player.maxHp);
     expect(context.player.ammo).toBe(context.player.maxAmmo);
     expect(result.clearEnemyProjectiles).toBe(true);

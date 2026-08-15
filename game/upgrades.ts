@@ -3,8 +3,8 @@ import type { Player, UpgradeId } from '../types';
 import { t } from '../utils/i18n';
 
 export interface RunModifiers {
-  fastGc: boolean;
-  overclock: boolean;
+  fastGcLevel: number;
+  overclockLevel: number;
 }
 
 type AddFloatingText = (
@@ -31,21 +31,21 @@ export function applyUpgrade(
       addFloatingText(x, y, t('compilerUpgraded'), COLORS.class);
       break;
     case 'MAX_HP':
-      player.maxHp += 25;
-      player.hp = player.maxHp;
+      player.maxHp += 12;
+      player.hp = Math.min(player.maxHp, player.hp + 12);
       addFloatingText(x, y, t('heapExpanded'), COLORS.gitAdded);
       break;
     case 'MAX_AMMO':
-      player.maxAmmo += 10;
-      player.ammo = player.maxAmmo;
+      player.maxAmmo += 5;
+      player.ammo = Math.min(player.maxAmmo, player.ammo + 5);
       addFloatingText(x, y, t('bufferOverflow'), COLORS.keyword);
       break;
     case 'RELOAD':
-      nextModifiers.fastGc = true;
+      nextModifiers.fastGcLevel = Math.min(3, modifiers.fastGcLevel + 1);
       addFloatingText(x, y, t('fastGcEnabled'), COLORS.function);
       break;
     case 'OVERCLOCK':
-      nextModifiers.overclock = true;
+      nextModifiers.overclockLevel = Math.min(3, modifiers.overclockLevel + 1);
       addFloatingText(x, y, t('overclocked'), COLORS.warning);
       break;
   }

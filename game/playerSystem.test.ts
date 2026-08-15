@@ -11,8 +11,8 @@ const createContext = () => ({
   timestamp: 200,
   lastFireTime: 0,
   movementSensitivity: 1,
-  fastGc: false,
-  overclock: false,
+  fastGcLevel: 0,
+  overclockLevel: 0,
   addFloatingText: vi.fn(),
   triggerUltimate: vi.fn(),
 });
@@ -23,6 +23,7 @@ describe('player system', () => {
     context.keys.add('KeyA');
     context.keys.add('KeyW');
     context.player.speedBuff = 10;
+    context.player.weaponBuff = 10;
     const startX = context.player.x;
     const startY = context.player.y;
 
@@ -31,6 +32,7 @@ describe('player system', () => {
     expect(context.player.x).toBe(startX - 9);
     expect(context.player.y).toBe(startY - 9);
     expect(context.player.speedBuff).toBe(9);
+    expect(context.player.weaponBuff).toBe(9);
   });
 
   it('keeps the player out of the reserved minimap rail', () => {
@@ -56,19 +58,31 @@ describe('player system', () => {
     expect(context.stats.linesOfCode).toBe(1);
   });
 
+  it('turns a high combo into a noticeable fire-rate bonus', () => {
+    const context = createContext();
+    context.timestamp = 130;
+    context.keys.add('Space');
+
+    expect(updatePlayerSystem(context).projectiles).toHaveLength(0);
+
+    context.stats.combo = 20;
+    context.stats.comboTimer = 180;
+    expect(updatePlayerSystem(context).projectiles).toHaveLength(1);
+  });
+
   it('starts the shortened reload after firing the final round', () => {
     const context = createContext();
     context.keys.add('Space');
-    context.fastGc = true;
+    context.fastGcLevel = 1;
     context.player.ammo = 1;
 
     updatePlayerSystem(context);
 
     expect(context.player.isReloading).toBe(true);
-    expect(context.player.reloadTimer).toBe(105);
+    expect(context.player.reloadTimer).toBe(135);
   });
 
-  it('expires a combo and requests the ultimate when charged', () => {
+  it('decays a combo by one stack and requests the ultimate when charged', () => {
     const context = createContext();
     context.keys.add('KeyR');
     context.player.specialCharge = MAX_SPECIAL_CHARGE;
@@ -77,7 +91,7 @@ describe('player system', () => {
 
     updatePlayerSystem(context);
 
-    expect(context.stats.combo).toBe(0);
+    expect(context.stats.combo).toBe(2);
     expect(context.triggerUltimate).toHaveBeenCalledOnce();
   });
 });

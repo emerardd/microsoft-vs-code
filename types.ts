@@ -24,7 +24,9 @@ export interface Player extends Entity {
   invulnerable: number;
   weaponLevel: number;
   speedBuff: number; // Frames remaining for speed boost
+  weaponBuff: number; // Frames remaining for temporary Copilot weapon boost
   shield: number; // Frames remaining for shield
+  damageMultiplier: number; // Permanent, gradual per-wave damage growth
   // Ammo Mechanics
   ammo: number;
   maxAmmo: number;
@@ -63,6 +65,8 @@ export interface Enemy extends Entity {
   scoreValue: number;
   age: number;
   flashTimer: number; // For hit feedback
+  wave?: number; // Spawn wave, used to scale enemy abilities
+  bossComboDamage?: number; // Unbanked damage toward the next Boss combo stack
 }
 
 export interface Particle extends Entity {

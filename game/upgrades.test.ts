@@ -9,13 +9,14 @@ describe('upgrade application', () => {
     player.ammo = 1;
     const addFloatingText = vi.fn();
 
-    applyUpgrade('MAX_HP', player, { fastGc: false, overclock: false }, addFloatingText);
-    applyUpgrade('MAX_AMMO', player, { fastGc: false, overclock: false }, addFloatingText);
+    const modifiers = { fastGcLevel: 0, overclockLevel: 0 };
+    applyUpgrade('MAX_HP', player, modifiers, addFloatingText);
+    applyUpgrade('MAX_AMMO', player, modifiers, addFloatingText);
 
-    expect(player.maxHp).toBe(125);
-    expect(player.hp).toBe(125);
-    expect(player.maxAmmo).toBe(50);
-    expect(player.ammo).toBe(50);
+    expect(player.maxHp).toBe(112);
+    expect(player.hp).toBe(22);
+    expect(player.maxAmmo).toBe(45);
+    expect(player.ammo).toBe(6);
     expect(addFloatingText).toHaveBeenCalledTimes(2);
   });
 
@@ -23,7 +24,12 @@ describe('upgrade application', () => {
     const player = createInitialPlayer();
     player.weaponLevel = 5;
 
-    applyUpgrade('WEAPON', player, { fastGc: false, overclock: false }, vi.fn());
+    applyUpgrade(
+      'WEAPON',
+      player,
+      { fastGcLevel: 0, overclockLevel: 0 },
+      vi.fn(),
+    );
 
     expect(player.weaponLevel).toBe(5);
   });
@@ -35,11 +41,14 @@ describe('upgrade application', () => {
     const fastGc = applyUpgrade(
       'RELOAD',
       player,
-      { fastGc: false, overclock: false },
+      { fastGcLevel: 0, overclockLevel: 0 },
       addFloatingText,
     );
     const overclock = applyUpgrade('OVERCLOCK', player, fastGc, addFloatingText);
 
-    expect(overclock).toEqual({ fastGc: true, overclock: true });
+    expect(overclock).toEqual({ fastGcLevel: 1, overclockLevel: 1 });
+
+    const stacked = applyUpgrade('OVERCLOCK', player, overclock, addFloatingText);
+    expect(stacked.overclockLevel).toBe(2);
   });
 });

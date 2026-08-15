@@ -19,9 +19,9 @@ describe('entity factories', () => {
 
     expect(enemy.x).toBe(40);
     expect(enemy.y).toBe(50);
-    expect(enemy.hp).toBe(7);
-    expect(enemy.maxHp).toBe(7);
-    expect(enemy.vy).toBe(1.7);
+    expect(enemy.hp).toBeCloseTo(6.67, 2);
+    expect(enemy.maxHp).toBeCloseTo(6.67, 2);
+    expect(enemy.vy).toBeCloseTo(1.5925, 4);
   });
 
   it('spawns random enemies inside the playable area', () => {
@@ -30,12 +30,21 @@ describe('entity factories', () => {
     expect(enemy.x + enemy.width).toBeLessThanOrEqual(PLAYFIELD_WIDTH);
   });
 
+  it('increases enemy health and score across waves', () => {
+    const early = createEnemy('BUG', 1, {}, () => 0.5);
+    const late = createEnemy('BUG', 6, {}, () => 0.5);
+
+    expect(late.hp).toBeGreaterThan(early.hp * 2);
+    expect(late.scoreValue).toBeGreaterThan(early.scoreValue);
+  });
+
   it('creates a centered boss with boss-specific health scaling', () => {
     const boss = createBoss(2, () => 0.25);
 
     expect(boss.type).toBe('MONOLITH');
     expect(boss.x).toBe(PLAYFIELD_WIDTH / 2 - boss.width / 2);
-    expect(boss.hp).toBe(1200);
+    expect(boss.hp).toBe(1302);
+    expect(boss.scoreValue).toBe(6000);
     expect(boss.height).toBe(60);
   });
 
@@ -51,6 +60,12 @@ describe('entity factories', () => {
     player.weaponLevel = 4;
     expect(createPlayerProjectiles(player, () => 0.1).map(({ type }) => type))
       .toEqual(['DEFAULT', 'TS_BEAM', 'TS_BEAM', 'SUDO_BLAST', 'SUDO_BLAST']);
+
+    player.weaponLevel = 1;
+    player.weaponBuff = 480;
+    expect(createPlayerProjectiles(player, () => 0.1).map(({ type }) => type))
+      .toEqual(['DEFAULT', 'TS_BEAM', 'TS_BEAM']);
+    expect(player.weaponLevel).toBe(1);
   });
 
   it('creates the requested number of explosion particles', () => {

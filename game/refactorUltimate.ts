@@ -12,6 +12,7 @@ import type {
 } from '../types';
 import { sfxUltimate } from '../utils/audio';
 import { t } from '../utils/i18n';
+import { addBossDamageCombo } from './combo';
 
 interface RefactorUltimateContext {
   player: Player;
@@ -56,7 +57,8 @@ export function activateRefactorUltimate({
 
   // Use a snapshot because defeating MERGE_CONFLICT can append new enemies.
   [...enemies].forEach((enemy) => {
-    enemy.hp -= 50;
+    const damage = Math.min(enemy.hp, 50);
+    enemy.hp -= damage;
     enemy.flashTimer = 10;
     createExplosion(
       enemy.x + enemy.width / 2,
@@ -64,6 +66,15 @@ export function activateRefactorUltimate({
       COLORS.accent,
       5,
     );
+    const comboGained = addBossDamageCombo(enemy, stats, damage);
+    if (comboGained > 0) {
+      addFloatingText(
+        enemy.x + enemy.width / 2 - 35,
+        enemy.y + enemy.height,
+        t('bossComboGain', { n: comboGained }),
+        COLORS.warning,
+      );
+    }
     handleEnemyDefeat(enemy);
   });
 

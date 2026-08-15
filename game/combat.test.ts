@@ -118,14 +118,64 @@ describe('combat resolution', () => {
     const context = createContext();
     context.player.x = 100;
     context.player.y = 100;
+    context.stats.combo = 10;
     context.enemyProjectiles = [createEnemyProjectile()];
 
     const result = resolveCombat(context);
 
     expect(context.player.hp).toBe(85);
     expect(context.player.invulnerable).toBe(40);
+    expect(context.stats.combo).toBe(6);
     expect(context.enemyProjectiles[0].y).toBeGreaterThan(600);
     expect(result.shake).toBe(15);
+  });
+
+  it('applies the active combo damage bonus to projectiles', () => {
+    const context = createContext();
+    context.player.x = 500;
+    context.player.y = 500;
+    context.stats.combo = 10;
+    context.enemies = [createEnemy({ hp: 100, maxHp: 100 })];
+    context.projectiles = [createProjectile()];
+
+    const result = resolveCombat(context);
+
+    expect(result.enemies[0].hp).toBe(88);
+  });
+
+  it('converts each five percent of Boss health dealt into combo', () => {
+    const context = createContext();
+    context.player.x = 500;
+    context.player.y = 500;
+    context.enemies = [createEnemy({
+      type: 'MONOLITH',
+      hp: 200,
+      maxHp: 200,
+    })];
+    context.projectiles = [createProjectile({ damage: 10 })];
+
+    resolveCombat(context);
+
+    expect(context.enemies[0].hp).toBe(190);
+    expect(context.stats.combo).toBe(1);
+    expect(context.addFloatingText).toHaveBeenCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      'BOSS DAMAGE: COMBO +1',
+      expect.any(String),
+    );
+  });
+
+  it('makes the Copilot projectile upgrade temporary', () => {
+    const context = createContext();
+    context.player.x = 100;
+    context.player.y = 100;
+    context.powerUps = [createPowerUp({ type: 'COPILOT', y: 96 })];
+
+    resolveCombat(context);
+
+    expect(context.player.weaponLevel).toBe(1);
+    expect(context.player.weaponBuff).toBe(480);
   });
 
   it('moves and applies a collected healing power-up using frame scale', () => {

@@ -55,4 +55,17 @@ describe('refactor ultimate', () => {
     expect(context.handleEnemyDefeat).toHaveBeenCalledWith(context.enemies[0]);
     expect(result.particle).toMatchObject({ id: 'shockwave', life: 1 });
   });
+
+  it('counts ultimate damage toward Boss combo thresholds', () => {
+    const context = createContext();
+    context.player.specialCharge = MAX_SPECIAL_CHARGE;
+    context.enemies[0].type = 'MONOLITH';
+    context.enemies[0].hp = 1000;
+    context.enemies[0].maxHp = 1000;
+
+    activateRefactorUltimate(context);
+
+    expect(context.stats.combo).toBe(1);
+    expect(context.enemies[0].hp).toBe(950);
+  });
 });

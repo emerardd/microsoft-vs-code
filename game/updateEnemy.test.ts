@@ -45,7 +45,7 @@ describe('updateEnemy', () => {
     const enemy = createEnemy();
     update(enemy);
 
-    expect(enemy.x).toBe(12);
+    expect(enemy.x).toBeCloseTo(11.955);
     expect(enemy.y).toBe(23);
     expect(enemy.age).toBe(1);
   });
@@ -68,6 +68,8 @@ describe('updateEnemy', () => {
     expect(enemy.width).toBe(32);
     expect(enemy.height).toBe(21);
     expect(enemy.x).toBe(9);
+    expect(enemy.hp).toBeGreaterThan(20);
+    expect(enemy.maxHp).toBeGreaterThan(20);
   });
 
   it('teleports a race condition on the configured interval', () => {
@@ -76,5 +78,34 @@ describe('updateEnemy', () => {
 
     expect(createExplosion).toHaveBeenCalledOnce();
     expect(enemy.x).toBeGreaterThan(10);
+  });
+
+  it('gives syntax errors a distinct aimed ranged attack', () => {
+    const enemy = createEnemy({ type: 'SYNTAX_ERROR', age: 176, wave: 1 });
+    const { enemyProjectiles } = update(enemy);
+
+    expect(enemyProjectiles).toHaveLength(1);
+    expect(enemyProjectiles[0].label).toBe('};');
+    expect(enemyProjectiles[0].width).toBe(20);
+    expect(enemyProjectiles[0].color).toBe('#ff6b6b');
+    expect(enemyProjectiles[0].vy).toBeGreaterThan(0);
+  });
+
+  it('uses a five-shot spread in the boss final phase', () => {
+    const enemy = createEnemy({
+      type: 'MONOLITH',
+      x: 200,
+      y: 60,
+      width: 160,
+      height: 60,
+      hp: 4,
+      maxHp: 20,
+      age: 67,
+      wave: 1,
+    });
+    const { enemyProjectiles } = update(enemy);
+
+    expect(enemyProjectiles).toHaveLength(5);
+    expect(enemyProjectiles.every(projectile => projectile.label === '✖')).toBe(true);
   });
 });

@@ -2,6 +2,7 @@ import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
   COLORS,
+  COPILOT_BUFF_DURATION,
   MAX_SPECIAL_CHARGE,
   PLAYFIELD_WIDTH,
 } from '../constants';
@@ -17,6 +18,7 @@ import type {
 } from '../types';
 import { t } from '../utils/i18n';
 import { renderMinimap } from './minimap';
+import { getComboBonuses } from './combo';
 
 const GAME_FONT = '"Cascadia Code", Consolas, monospace';
 
@@ -84,6 +86,39 @@ function renderHealthHud(
     `${Math.max(0, Math.ceil(player.hp))}/${player.maxHp}`,
     hudX + hudWidth - 7,
     hudY + hudHeight / 2 + 0.5,
+  );
+  ctx.restore();
+}
+
+function renderComboHud(
+  ctx: CanvasRenderingContext2D,
+  stats: GameStats,
+): void {
+  if (stats.combo <= 0) return;
+
+  const bonuses = getComboBonuses(stats.combo);
+  const x = PLAYFIELD_WIDTH - 192;
+  const y = stats.bossActive ? 42 : 12;
+  const width = 180;
+  const height = 38;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(37,37,38,0.94)';
+  ctx.fillRect(x, y, width, height);
+  ctx.strokeStyle = COLORS.warning;
+  ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+  ctx.font = `bold 12px ${GAME_FONT}`;
+  ctx.fillStyle = COLORS.warning;
+  ctx.fillText(t('comboHud', { combo: stats.combo }), x + 8, y + 14);
+  ctx.font = `10px ${GAME_FONT}`;
+  ctx.fillStyle = COLORS.text;
+  ctx.fillText(
+    t('comboBonusHud', {
+      damage: Math.round((bonuses.damageMultiplier - 1) * 100),
+      rate: Math.round((1 - bonuses.fireRateMultiplier) * 100),
+    }),
+    x + 8,
+    y + 28,
   );
   ctx.restore();
 }
@@ -221,7 +256,11 @@ export function renderScene({
     ctx.lineTo(0, 10);
     ctx.lineTo(-15, 15);
     ctx.closePath();
-    ctx.fillStyle = player.speedBuff > 0 ? COLORS.warning : COLORS.statusBar;
+    ctx.fillStyle = player.speedBuff > 0
+      ? COLORS.warning
+      : player.weaponBuff > 0
+        ? COLORS.class
+        : COLORS.statusBar;
     ctx.fill();
 
     const ammoPct = player.ammo / player.maxAmmo;
@@ -229,11 +268,42 @@ export function renderScene({
     ctx.fillRect(-20, 25, 40, 4);
     ctx.fillStyle = player.isReloading ? COLORS.error : COLORS.class;
     ctx.fillRect(-20, 25, 40 * ammoPct, 4);
+    if (player.weaponBuff > 0) {
+      const buffPct = Math.min(1, player.weaponBuff / COPILOT_BUFF_DURATION);
+      ctx.fillStyle = '#333';
+      ctx.fillRect(-20, 32, 40, 3);
+      ctx.fillStyle = COLORS.class;
+      ctx.fillRect(-20, 32, 40 * buffPct, 3);
+    }
     ctx.restore();
   }
 
   ctx.font = `20px ${GAME_FONT}`;
   enemyProjectiles.forEach(projectile => {
+    if (projectile.label === '};') {
+      const centerX = projectile.x + projectile.width / 2;
+      const centerY = projectile.y + projectile.height / 2;
+      const pulse = 12 + Math.sin(timestamp * 0.02) * 2;
+      ctx.save();
+      ctx.shadowColor = projectile.color;
+      ctx.shadowBlur = 16;
+      ctx.fillStyle = 'rgba(255,107,107,0.28)';
+      ctx.strokeStyle = projectile.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, pulse, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold 18px ${GAME_FONT}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(projectile.label, centerX, centerY);
+      ctx.restore();
+      return;
+    }
+
     ctx.fillStyle = projectile.color;
     ctx.fillText(projectile.label, projectile.x - 10, projectile.y);
   });
@@ -295,21 +365,23 @@ export function renderScene({
     const barWidth = PLAYFIELD_WIDTH * 0.6;
     const barX = (PLAYFIELD_WIDTH - barWidth) / 2;
     const hpRatio = Math.max(0, monolith.hp / monolith.maxHp);
-    const isRage = monolith.hp < monolith.maxHp * 0.5;
+    const phase = hpRatio <= 0.25 ? 3 : hpRatio <= 0.6 ? 2 : 1;
 
     ctx.fillStyle = '#333';
     ctx.fillRect(barX, 20, barWidth, 15);
-    ctx.fillStyle = isRage ? COLORS.error : '#f14c4c';
+    ctx.fillStyle = phase >= 2 ? COLORS.error : '#f14c4c';
     ctx.fillRect(barX, 20, barWidth * hpRatio, 15);
-    ctx.strokeStyle = isRage ? COLORS.warning : '#fff';
+    ctx.strokeStyle = phase >= 2 ? COLORS.warning : '#fff';
     ctx.strokeRect(barX, 20, barWidth, 15);
-    ctx.fillStyle = isRage ? COLORS.warning : '#fff';
+    ctx.fillStyle = phase >= 2 ? COLORS.warning : '#fff';
     ctx.textAlign = 'center';
     ctx.font = `bold 12px ${GAME_FONT}`;
     ctx.fillText(
-      isRage
-        ? t('bossBarPhase2', { wave: stats.wave })
-        : t('bossBar', { wave: stats.wave }),
+      phase === 3
+        ? t('bossBarPhase3', { wave: stats.wave })
+        : phase === 2
+          ? t('bossBarPhase2', { wave: stats.wave })
+          : t('bossBar', { wave: stats.wave }),
       PLAYFIELD_WIDTH / 2,
       15,
     );
@@ -338,6 +410,7 @@ export function renderScene({
 
   ctx.restore();
   renderHealthHud(ctx, player);
+  renderComboHud(ctx, stats);
   renderMinimap(ctx, player, enemies);
   return nextShake;
 }

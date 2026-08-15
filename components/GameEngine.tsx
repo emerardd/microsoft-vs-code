@@ -60,8 +60,8 @@ const GameEngine: React.FC<GameEngineProps> = ({
   const playerRef = useRef<Player>(createInitialPlayer());
 
   // Permanent per-run modifiers from wave upgrades
-  const overclockRef = useRef(false);   // OVERCLOCK: fire rate 150→80ms
-  const fastGcRef = useRef(false);       // RELOAD: 30% shorter reload
+  const overclockLevelRef = useRef(0); // Each stack: 8% faster, up to 3
+  const fastGcLevelRef = useRef(0); // Each stack: 10% shorter reload, up to 3
 
   // ── Entity arrays ─────────────────────────────────────────────────────────
   const projectilesRef = useRef<Projectile[]>([]);
@@ -117,13 +117,13 @@ const GameEngine: React.FC<GameEngineProps> = ({
       pendingUpgrade,
       playerRef.current,
       {
-        fastGc: fastGcRef.current,
-        overclock: overclockRef.current,
+        fastGcLevel: fastGcLevelRef.current,
+        overclockLevel: overclockLevelRef.current,
       },
       addFloatingText,
     );
-    fastGcRef.current = modifiers.fastGc;
-    overclockRef.current = modifiers.overclock;
+    fastGcLevelRef.current = modifiers.fastGcLevel;
+    overclockLevelRef.current = modifiers.overclockLevel;
 
     statsRef.current.pendingUpgrades = [];
     syncStatsToUI();
@@ -156,6 +156,11 @@ const GameEngine: React.FC<GameEngineProps> = ({
         spawnEnemy,
         createExplosion,
         addFloatingText,
+        excludedUpgrades: [
+          ...(playerRef.current.weaponLevel >= 5 ? ['WEAPON' as const] : []),
+          ...(fastGcLevelRef.current >= 3 ? ['RELOAD' as const] : []),
+          ...(overclockLevelRef.current >= 3 ? ['OVERCLOCK' as const] : []),
+        ],
       });
       if (!result.defeated) return;
 
@@ -194,8 +199,8 @@ const GameEngine: React.FC<GameEngineProps> = ({
 
   // ── Reset ─────────────────────────────────────────────────────────────────
   const resetGame = useCallback(() => {
-    overclockRef.current = false;
-    fastGcRef.current = false;
+    overclockLevelRef.current = 0;
+    fastGcLevelRef.current = 0;
 
     playerRef.current = createInitialPlayer();
     projectilesRef.current = [];
@@ -299,8 +304,8 @@ const GameEngine: React.FC<GameEngineProps> = ({
       timestamp,
       lastFireTime: lastFireTimeRef.current,
       movementSensitivity,
-      fastGc: fastGcRef.current,
-      overclock: overclockRef.current,
+      fastGcLevel: fastGcLevelRef.current,
+      overclockLevel: overclockLevelRef.current,
       addFloatingText,
       triggerUltimate: triggerRefactorUltimate,
     });
@@ -312,7 +317,10 @@ const GameEngine: React.FC<GameEngineProps> = ({
         spawnBoss();
     }
 
-    const spawnRate = Math.max(300, 1200 - statsRef.current.wave * 100);
+    const spawnRate = Math.max(
+      320,
+      1100 * Math.pow(0.88, statsRef.current.wave - 1),
+    );
     if (timestamp - lastSpawnTimeRef.current > spawnRate && !statsRef.current.bossActive) {
         spawnEnemy('RANDOM');
         lastSpawnTimeRef.current = timestamp;

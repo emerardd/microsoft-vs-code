@@ -9,7 +9,8 @@ describe('content selection', () => {
   it('selects wave-specific enemy definitions', () => {
     expect(selectEnemyDefinition('RANDOM', 1, () => 0.1).type).toBe('BUG');
     expect(selectEnemyDefinition('RANDOM', 1, () => 0.9).type).toBe('SYNTAX_ERROR');
-    expect(selectEnemyDefinition('RANDOM', 3, () => 0.95).type).toBe('RACE_CONDITION');
+    expect(selectEnemyDefinition('RANDOM', 3, () => 0.95).type).toBe('MERGE_CONFLICT');
+    expect(selectEnemyDefinition('RANDOM', 5, () => 0.95).type).toBe('RACE_CONDITION');
   });
 
   it('returns a requested enemy definition directly', () => {
@@ -20,6 +21,12 @@ describe('content selection', () => {
     const choices = pickUpgradeChoices(3, () => 0);
     expect(choices).toHaveLength(3);
     expect(new Set(choices.map(choice => choice.id)).size).toBe(3);
+  });
+
+  it('does not offer upgrades that are already capped', () => {
+    const choices = pickUpgradeChoices(3, () => 0, ['WEAPON', 'RELOAD']);
+    expect(choices.map(choice => choice.id)).not.toContain('WEAPON');
+    expect(choices.map(choice => choice.id)).not.toContain('RELOAD');
   });
 
   it('uses configured power-up weights', () => {

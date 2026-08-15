@@ -54,6 +54,7 @@ const STRINGS = {
     gcComplete:       'GC COMPLETE',
     speedUp:          'SPEED++',
     weaponUp:         'WEAPON++',
+    weaponBoost:      'COPILOT BOOST: 8s',
     shield:           'SHIELD',
     deploySuccess:    'DEPLOYMENT SUCCESS!',
     bossApproaching:  'BOSS APPROACHING',
@@ -64,6 +65,7 @@ const STRINGS = {
     fastGcEnabled:    'FAST GC ENABLED!',
     overclocked:      'OVERCLOCKED!',
     comboLabel:       '{n}x COMBO!',
+    bossComboGain:    'BOSS DAMAGE: COMBO +{n}',
     hpGain:           '+{n} HP',
     dmgLabel:         '-{n}',
 
@@ -72,7 +74,10 @@ const STRINGS = {
     pressToContinue:  'Press P to Continue',
     bossBar:          'LEGACY MONOLITH (v{wave}.0)',
     bossBarPhase2:    '⚠ PHASE 2 ─ LEGACY MONOLITH (v{wave}.0) ⚠',
+    bossBarPhase3:    '⚠ PHASE 3 ─ KERNEL PANIC (v{wave}.0) ⚠',
     hpLabel:          'HP',
+    comboHud:         'COMBO {combo}x',
+    comboBonusHud:    'DMG +{damage}%  RATE +{rate}%',
     gameCanvasLabel:  'VS Code arcade shooter game area',
 
     // ── Terminal logs ─────────────────────────────────────────────────────
@@ -82,6 +87,7 @@ const STRINGS = {
     logBoss:          'CRITICAL: Legacy Monolith detected! Expect high latency.',
     logBossKilled:    'SUCCESS: v{wave}.0 Shipped!',
     logComboBreak:    'Combo broken. Optimize loop.',
+    logComboDecay:    'Combo cooling down: {combo} stacks remain.',
     logGcPause:       'Warning: Heap full. Triggering Garbage Collection.',
 
     // ── Start screen ──────────────────────────────────────────────────────
@@ -123,13 +129,14 @@ const STRINGS = {
     upg_WEAPON_title:    'Compiler Upgrade',
     upg_WEAPON_desc:     'TypeScript compiler +1 level. More projectiles.',
     upg_MAX_HP_title:    'Heap Expansion',
-    upg_MAX_HP_desc:     'Max HP +25 and fully restore current HP.',
+    upg_MAX_HP_desc:     'Max HP +12 and restore 12 HP.',
     upg_MAX_AMMO_title:  'Buffer Overflow',
-    upg_MAX_AMMO_desc:   'Magazine size +10. More shots before GC pause.',
+    upg_MAX_AMMO_desc:   'Magazine size +5 and restore 5 ammo.',
     upg_RELOAD_title:    'Fast GC',
-    upg_RELOAD_desc:     'Garbage collection 30% faster. Shorter reload time.',
+    upg_RELOAD_desc:     'Reload 10% faster per stack, up to 30%.',
     upg_OVERCLOCK_title: 'Overclock CPU',
-    upg_OVERCLOCK_desc:  'Permanent fire rate boost (100ms → 80ms).',
+    upg_OVERCLOCK_desc:  'Fire 8% faster per stack, up to 24%.',
+    waveGrowthSummary:   'Core patch: +5 max HP, +2 ammo, +4% base damage',
 
     // ── Explorer sidebar ──────────────────────────────────────────────────
     runDebugLabel:   'Run & Debug',
@@ -142,15 +149,15 @@ const STRINGS = {
     // ── Search sidebar ────────────────────────────────────────────────────
     enemyDatabase:   'ENEMY DATABASE',
     unknownEntity:   'Unknown Entity',
-    enemyDescBug:      'Common bug. Weak alone, dangerous in a swarm.',
-    enemyDescSyntax:   'A stubborn syntax error with extra durability.',
+    enemyDescBug:      'A common bug that gradually homes toward the player.',
+    enemyDescSyntax:   'A durable syntax error that fires bright, aimed brace shots.',
     enemyDescSpaghetti:'Unpredictable spaghetti code that drifts sideways.',
     enemyDescMerge:    'A merge conflict that splits into two bugs on defeat.',
-    enemyDescLoop:     'An infinite loop that advances in a spiral pattern.',
-    enemyDescRace:     'A race condition that teleports at random intervals.',
-    enemyDescMemory:   'A memory leak that grows while it remains alive.',
-    enemyDesc404:      'A missing resource moving at very high speed.',
-    enemyDescMonolith: 'The legacy-code boss with projectiles and minions.',
+    enemyDescLoop:     'A spiral-moving loop that emits four-way bursts.',
+    enemyDescRace:     'Teleports and attacks from its new position.',
+    enemyDescMemory:   'Grows in size and health while gradually slowing.',
+    enemyDesc404:      'Ricochets and periodically dashes toward the player.',
+    enemyDescMonolith: 'A three-phase boss with scaling fire and minions.',
 
     // ── Git sidebar ───────────────────────────────────────────────────────
     commitHistory:    'COMMIT HISTORY',
@@ -292,6 +299,7 @@ const STRINGS = {
     gcComplete:       'GC 完成',
     speedUp:          '速度提升',
     weaponUp:         '武器升级',
+    weaponBoost:      'COPILOT 增强：8 秒',
     shield:           '护盾激活',
     deploySuccess:    '部署成功！',
     bossApproaching:  'Boss 来袭！',
@@ -302,6 +310,7 @@ const STRINGS = {
     fastGcEnabled:    '快速GC已启用！',
     overclocked:      '已超频！',
     comboLabel:       '{n}x 连击！',
+    bossComboGain:    'Boss 破防：连击 +{n}',
     hpGain:           '+{n} 生命',
     dmgLabel:         '-{n}',
 
@@ -310,7 +319,10 @@ const STRINGS = {
     pressToContinue:  '按 P 继续',
     bossBar:          '遗留代码单体 (v{wave}.0)',
     bossBarPhase2:    '⚠ 第二阶段 ─ 遗留代码单体 (v{wave}.0) ⚠',
+    bossBarPhase3:    '⚠ 第三阶段 ─ 内核崩溃 (v{wave}.0) ⚠',
     hpLabel:          '生命',
+    comboHud:         '连击 {combo}x',
+    comboBonusHud:    '伤害 +{damage}%  射速 +{rate}%',
     gameCanvasLabel:  'VS Code 街机射击游戏区域',
 
     // ── Terminal logs ─────────────────────────────────────────────────────
@@ -320,6 +332,7 @@ const STRINGS = {
     logBoss:       '严重警告：检测到遗留代码单体！高延迟预警。',
     logBossKilled: '成功：v{wave}.0 已发布！',
     logComboBreak: '连击中断，优化循环。',
+    logComboDecay: '连击正在冷却：剩余 {combo} 层。',
     logGcPause:    '警告：堆已满，正在触发垃圾回收。',
 
     // ── Start screen ──────────────────────────────────────────────────────
@@ -361,13 +374,14 @@ const STRINGS = {
     upg_WEAPON_title:    '编译器升级',
     upg_WEAPON_desc:     'TypeScript 编译器 +1 级，发射更多弹幕。',
     upg_MAX_HP_title:    '堆内存扩容',
-    upg_MAX_HP_desc:     '最大生命值 +25 并立即回满。',
+    upg_MAX_HP_desc:     '最大生命值 +12，并恢复 12 点生命。',
     upg_MAX_AMMO_title:  '缓冲区溢出',
-    upg_MAX_AMMO_desc:   '弹匣容量 +10，减少GC暂停次数。',
+    upg_MAX_AMMO_desc:   '弹匣容量 +5，并恢复 5 发弹药。',
     upg_RELOAD_title:    '快速 GC',
-    upg_RELOAD_desc:     '垃圾回收提速 30%，装弹时间缩短。',
+    upg_RELOAD_desc:     '每层装弹加快 10%，最多叠加到 30%。',
     upg_OVERCLOCK_title: '超频 CPU',
-    upg_OVERCLOCK_desc:  '永久提升射速（100ms → 80ms）。',
+    upg_OVERCLOCK_desc:  '每层射速提升 8%，最多叠加到 24%。',
+    waveGrowthSummary:   '基础补丁：最大生命 +5、弹药 +2、基础伤害 +4%',
 
     // ── Explorer sidebar ──────────────────────────────────────────────────
     runDebugLabel:   '运行和调试',
@@ -380,15 +394,15 @@ const STRINGS = {
     // ── Search sidebar ────────────────────────────────────────────────────
     enemyDatabase: '敌人数据库',
     unknownEntity: '未知实体',
-    enemyDescBug:       '普通 Bug，单独很弱，成群出现时更危险。',
-    enemyDescSyntax:    '比较耐打的语法错误。',
+    enemyDescBug:       '普通 Bug，会逐渐向玩家方向追踪。',
+    enemyDescSyntax:    '耐打的语法错误，会发射醒目的瞄准括号弹。',
     enemyDescSpaghetti: '横向飘动、轨迹难以预测的面条代码。',
     enemyDescMerge:     '被击败后会分裂成两个 Bug 的合并冲突。',
-    enemyDescLoop:      '沿螺旋轨迹前进的死循环。',
-    enemyDescRace:      '定期随机瞬移的竞态条件。',
-    enemyDescMemory:    '存活越久体积越大的内存泄漏。',
-    enemyDesc404:       '高速移动的资源丢失错误。',
-    enemyDescMonolith:  '会发射弹幕并召唤小怪的遗留代码 Boss。',
+    enemyDescLoop:      '沿螺旋轨迹移动，并发射四路弹幕。',
+    enemyDescRace:      '随机瞬移，并从新位置发动攻击。',
+    enemyDescMemory:    '存活越久，体积和生命越高，同时逐渐减速。',
+    enemyDesc404:       '来回反弹，并定期向玩家方向冲刺。',
+    enemyDescMonolith:  '拥有三阶段弹幕与召唤机制的遗留代码 Boss。',
 
     // ── Git sidebar ───────────────────────────────────────────────────────
     commitHistory:   '提交历史',

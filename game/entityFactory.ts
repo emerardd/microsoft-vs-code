@@ -75,7 +75,14 @@ export function createEnemy(
   random: RandomSource = Math.random,
 ): Enemy {
   const definition = selectEnemyDefinition(type, wave, random);
-  const hp = definition.hp * (1 + wave * 0.2) * (options.hpScale ?? 1);
+  const waveIndex = Math.max(0, wave - 1);
+  const hpScale = 1.15 * Math.pow(1.16, waveIndex);
+  const hp = definition.hp * hpScale * (options.hpScale ?? 1);
+  const speedScale = 1 + Math.min(0.35, waveIndex * 0.035);
+  const bonusFallSpeed = Math.min(0.6, waveIndex * 0.04);
+  const horizontalVelocity = definition.type === 'ERROR_404'
+    ? (random() >= 0.5 ? 3.5 : -3.5)
+    : (random() - 0.5) * 0.5;
 
   return {
     id: random().toString(),
@@ -83,16 +90,18 @@ export function createEnemy(
     y: options.y ?? -60,
     width: definition.width,
     height: 24,
-    vx: (random() - 0.5) * (definition.type === 'ERROR_404' ? 4 : 0.5),
-    vy: definition.speed + wave * 0.1,
+    vx: horizontalVelocity,
+    vy: definition.speed * speedScale + bonusFallSpeed,
     color: definition.color,
     type: definition.type,
     hp,
     maxHp: hp,
     text: definition.text,
-    scoreValue: definition.score,
+    scoreValue: Math.round(definition.score * (1 + waveIndex * 0.12)),
     age: 0,
     flashTimer: 0,
+    wave,
+    bossComboDamage: 0,
   };
 }
 
@@ -101,7 +110,7 @@ export function createBoss(
   random: RandomSource = Math.random,
 ): Enemy {
   const definition = selectEnemyDefinition('MONOLITH', wave, random);
-  const hp = definition.hp * (1 + wave * 0.5);
+  const hp = definition.hp * 1.75 * Math.pow(1.24, Math.max(0, wave - 1));
 
   return {
     id: `boss-${random()}`,
@@ -116,9 +125,11 @@ export function createBoss(
     hp,
     maxHp: hp,
     text: definition.text,
-    scoreValue: definition.score,
+    scoreValue: Math.round(definition.score * (1 + Math.max(0, wave - 1) * 0.2)),
     age: 0,
     flashTimer: 0,
+    wave,
+    bossComboDamage: 0,
   };
 }
 
@@ -126,6 +137,11 @@ export function createPlayerProjectiles(
   player: Player,
   random: RandomSource = Math.random,
 ): Projectile[] {
+  const damageScale = player.damageMultiplier;
+  const weaponLevel = Math.min(
+    5,
+    player.weaponLevel + (player.weaponBuff > 0 ? 1 : 0),
+  );
   const projectiles: Projectile[] = [{
     id: random().toString(),
     x: player.x + player.width / 2 - 2,
@@ -135,11 +151,11 @@ export function createPlayerProjectiles(
     vx: 0,
     vy: -12,
     color: COLORS.keyword,
-    damage: 10,
+    damage: (10 + (weaponLevel - 1) * 1.5) * damageScale,
     type: 'DEFAULT',
   }];
 
-  if (player.weaponLevel >= 2) {
+  if (weaponLevel >= 2) {
     projectiles.push(
       {
         id: random().toString(),
@@ -150,7 +166,7 @@ export function createPlayerProjectiles(
         vx: -1,
         vy: -10,
         color: COLORS.function,
-        damage: 5,
+        damage: (2.5 + (weaponLevel - 2) * 0.5) * damageScale,
         type: 'TS_BEAM',
       },
       {
@@ -162,13 +178,13 @@ export function createPlayerProjectiles(
         vx: 1,
         vy: -10,
         color: COLORS.function,
-        damage: 5,
+        damage: (2.5 + (weaponLevel - 2) * 0.5) * damageScale,
         type: 'TS_BEAM',
       },
     );
   }
 
-  if (player.weaponLevel >= 4) {
+  if (weaponLevel >= 4) {
     projectiles.push(
       {
         id: random().toString(),
@@ -179,7 +195,7 @@ export function createPlayerProjectiles(
         vx: -4,
         vy: -8,
         color: COLORS.string,
-        damage: 8,
+        damage: (4 + (weaponLevel - 4)) * damageScale,
         type: 'SUDO_BLAST',
       },
       {
@@ -191,7 +207,7 @@ export function createPlayerProjectiles(
         vx: 4,
         vy: -8,
         color: COLORS.string,
-        damage: 8,
+        damage: (4 + (weaponLevel - 4)) * damageScale,
         type: 'SUDO_BLAST',
       },
     );

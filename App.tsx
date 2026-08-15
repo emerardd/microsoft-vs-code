@@ -926,7 +926,8 @@ export default function App() {
                  <div className="text-center mb-6">
                    <div className="text-[#4ec9b0] text-xs font-mono mb-1 uppercase tracking-widest">{t('waveDeployed', { wave: stats.wave - 1 })}</div>
                    <h2 className="text-3xl font-bold text-white mb-1">{t('chooseUpgrade')}</h2>
-                   <p className="text-gray-400 text-sm font-mono">{t('upgradeSubtitle')}</p>
+                    <p className="text-gray-400 text-sm font-mono">{t('upgradeSubtitle')}</p>
+                    <p className="mt-2 text-xs font-mono text-[#4ec9b0]">{t('waveGrowthSummary')}</p>
                  </div>
 
                  <div className="flex w-full max-w-3xl flex-col gap-3 px-2 sm:flex-row sm:gap-4 sm:px-6">

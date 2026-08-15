@@ -12,6 +12,7 @@ import type { GameStats, Player, Projectile } from '../types';
 import { sfxShoot } from '../utils/audio';
 import { regenerateAmmo } from '../utils/gameLogic';
 import { t } from '../utils/i18n';
+import { getComboBonuses, tickComboDecay } from './combo';
 import { createPlayerProjectiles } from './entityFactory';
 
 interface PlayerSystemContext {
@@ -22,8 +23,8 @@ interface PlayerSystemContext {
   timestamp: number;
   lastFireTime: number;
   movementSensitivity: number;
-  fastGc: boolean;
-  overclock: boolean;
+  fastGcLevel: number;
+  overclockLevel: number;
   addFloatingText: (
     x: number,
     y: number,
@@ -47,8 +48,8 @@ export function updatePlayerSystem({
   timestamp,
   lastFireTime,
   movementSensitivity,
-  fastGc,
-  overclock,
+  fastGcLevel,
+  overclockLevel,
   addFloatingText,
   triggerUltimate,
 }: PlayerSystemContext): PlayerSystemResult {
@@ -58,15 +59,14 @@ export function updatePlayerSystem({
   ) * sensitivity;
 
   player.speedBuff = Math.max(0, player.speedBuff - frameScale);
+  player.weaponBuff = Math.max(0, player.weaponBuff - frameScale);
   player.shield = Math.max(0, player.shield - frameScale);
   player.invulnerable = Math.max(0, player.invulnerable - frameScale);
 
-  if (stats.combo > 0) {
-    stats.comboTimer = Math.max(0, stats.comboTimer - frameScale);
-    if (stats.comboTimer <= 0) {
-      stats.combo = 0;
-      stats.lastLog = t('logComboBreak');
-    }
+  if (tickComboDecay(stats, frameScale)) {
+    stats.lastLog = stats.combo > 0
+      ? t('logComboDecay', { combo: stats.combo })
+      : t('logComboBreak');
   }
 
   if (
@@ -92,7 +92,7 @@ export function updatePlayerSystem({
   player.x = Math.max(0, Math.min(PLAYFIELD_WIDTH - player.width, player.x));
   player.y = Math.max(0, Math.min(CANVAS_HEIGHT - player.height, player.y));
 
-  const reloadDuration = fastGc ? RELOAD_TIME * 0.7 : RELOAD_TIME;
+  const reloadDuration = RELOAD_TIME * (1 - Math.min(3, fastGcLevel) * 0.1);
   if (player.isReloading) {
     player.reloadTimer -= frameScale;
     if (player.reloadTimer <= 0) {
@@ -109,7 +109,11 @@ export function updatePlayerSystem({
     );
   }
 
-  const fireRate = overclock ? 80 : (player.weaponLevel >= 3 ? 100 : 150);
+  const baseFireRate = player.weaponLevel >= 3 ? 110 : 150;
+  const overclockMultiplier = 1 - Math.min(3, overclockLevel) * 0.08;
+  const fireRate = baseFireRate
+    * overclockMultiplier
+    * getComboBonuses(stats.combo).fireRateMultiplier;
   const canShoot = !player.isReloading && player.ammo >= 1;
   const shouldShoot = keys.has('Space') && timestamp - lastFireTime > fireRate;
 

@@ -71,5 +71,8 @@ export const AMMO_REGEN = 0.4;
 export const RELOAD_TIME = 150; 
 
 export const SPECIAL_CHARGE_PER_KILL = 5;
-export const COMBO_TIMER_MAX = 120; // 2 seconds at 60fps
+export const COMBO_TIMER_MAX = 180; // 3 seconds before the combo starts decaying
+export const COMBO_DECAY_INTERVAL = 24; // then lose one stack every 0.4s at 60fps
 export const MAX_SPECIAL_CHARGE = 100;
+export const COPILOT_BUFF_DURATION = 480; // 8 seconds at 60fps
+export const BOSS_COMBO_HEALTH_STEP = 0.05; // one combo per 5% max HP dealt

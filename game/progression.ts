@@ -1,7 +1,6 @@
 import {
   CANVAS_HEIGHT,
   COLORS,
-  COMBO_TIMER_MAX,
   MAX_SPECIAL_CHARGE,
   PLAYFIELD_WIDTH,
   SPECIAL_CHARGE_PER_KILL,
@@ -11,6 +10,7 @@ import type {
   GameStats,
   Player,
   PowerUp,
+  UpgradeId,
   UpgradeOption,
 } from '../types';
 import { sfxExplosion, sfxWaveClear } from '../utils/audio';
@@ -18,6 +18,7 @@ import { t } from '../utils/i18n';
 import { pickUpgradeChoices } from './contentSelection';
 import { createPowerUpDrop } from './entityFactory';
 import type { EnemySpawnType } from './contentSelection';
+import { addComboStacks, getComboBonuses } from './combo';
 
 type RandomSource = () => number;
 
@@ -39,6 +40,7 @@ interface EnemyDefeatContext {
     vy?: number,
   ) => void;
   random?: RandomSource;
+  excludedUpgrades?: readonly UpgradeId[];
 }
 
 export interface EnemyDefeatResult {
@@ -66,6 +68,7 @@ export function resolveEnemyDefeat(
     createExplosion,
     addFloatingText,
     random = Math.random,
+    excludedUpgrades = [],
   }: EnemyDefeatContext,
 ): EnemyDefeatResult {
   if (enemy.hp > 0) return notDefeated();
@@ -85,16 +88,14 @@ export function resolveEnemyDefeat(
     addFloatingText(enemy.x, enemy.y, t('split'), COLORS.gitModified);
   }
 
-  const comboMultiplier = 1 + stats.combo * 0.1;
-  stats.score += Math.floor(enemy.scoreValue * comboMultiplier);
+  const comboBonuses = getComboBonuses(stats.combo);
+  stats.score += Math.floor(enemy.scoreValue * comboBonuses.scoreMultiplier);
   stats.bugsFixed++;
-  stats.combo++;
-  stats.maxCombo = Math.max(stats.maxCombo, stats.combo);
-  stats.comboTimer = COMBO_TIMER_MAX;
+  addComboStacks(stats);
 
   player.specialCharge = Math.min(
     MAX_SPECIAL_CHARGE,
-    player.specialCharge + SPECIAL_CHARGE_PER_KILL,
+    player.specialCharge + SPECIAL_CHARGE_PER_KILL * comboBonuses.chargeMultiplier,
   );
 
   if (stats.combo > 1 && stats.combo % 5 === 0) {
@@ -112,6 +113,9 @@ export function resolveEnemyDefeat(
 
   if (enemy.type === 'MONOLITH') {
     stats.bossActive = false;
+    player.maxHp += 5;
+    player.maxAmmo += 2;
+    player.damageMultiplier = Number((player.damageMultiplier + 0.04).toFixed(2));
     stats.wave++;
     stats.levelProgress = 0;
     stats.levelTarget += 5;
@@ -127,7 +131,7 @@ export function resolveEnemyDefeat(
     clearEnemyProjectiles = true;
     shake = 20;
     sfxWaveClear();
-    upgradeChoices = pickUpgradeChoices(3, random);
+    upgradeChoices = pickUpgradeChoices(3, random, excludedUpgrades);
   } else if (!stats.bossActive) {
     stats.levelProgress++;
   }
