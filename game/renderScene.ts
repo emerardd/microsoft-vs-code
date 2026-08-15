@@ -123,6 +123,70 @@ function renderComboHud(
   ctx.restore();
 }
 
+function renderRefactorHud(
+  ctx: CanvasRenderingContext2D,
+  player: Player,
+  timestamp: number,
+): void {
+  const x = 12;
+  const y = 40;
+  const width = 198;
+  const height = 38;
+  const keyWidth = 34;
+  const chargeRatio = Math.max(
+    0,
+    Math.min(1, player.specialCharge / MAX_SPECIAL_CHARGE),
+  );
+  const ready = chargeRatio >= 1;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(24,24,27,0.96)';
+  ctx.fillRect(x, y, width, height);
+  ctx.strokeStyle = ready ? COLORS.function : '#454545';
+  ctx.lineWidth = ready ? 2 : 1;
+  ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+
+  ctx.fillStyle = ready ? COLORS.function : '#68217a';
+  ctx.fillRect(x + 1, y + 1, keyWidth, height - 2);
+  ctx.fillStyle = ready ? '#1e1e1e' : '#ffffff';
+  ctx.font = `bold 20px ${GAME_FONT}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('R', x + keyWidth / 2 + 1, y + height / 2);
+
+  ctx.textAlign = 'left';
+  ctx.font = `bold 10px ${GAME_FONT}`;
+  ctx.fillStyle = ready ? COLORS.function : '#d8d8d8';
+  ctx.fillText(
+    ready ? t('refactorHudReady') : t('refactorHudCharging'),
+    x + keyWidth + 8,
+    y + 11,
+  );
+  ctx.textAlign = 'right';
+  ctx.fillText(
+    `${Math.round(chargeRatio * 100)}%`,
+    x + width - 7,
+    y + 11,
+  );
+
+  const barX = x + keyWidth + 8;
+  const barY = y + 22;
+  const barWidth = width - keyWidth - 15;
+  const barHeight = 9;
+  ctx.fillStyle = '#333333';
+  ctx.fillRect(barX, barY, barWidth, barHeight);
+  ctx.fillStyle = ready ? COLORS.function : COLORS.accent;
+  ctx.fillRect(barX, barY, Math.round(barWidth * chargeRatio), barHeight);
+
+  if (ready) {
+    ctx.globalAlpha = 0.45 + Math.sin(timestamp * 0.012) * 0.2;
+    ctx.strokeStyle = COLORS.function;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x - 2.5, y - 2.5, width + 5, height + 5);
+  }
+  ctx.restore();
+}
+
 export function renderPausedFrame(ctx: CanvasRenderingContext2D, showPauseMessage: boolean): void {
   ctx.save();
   ctx.fillStyle = 'rgba(0,0,0,0.55)';
@@ -410,6 +474,7 @@ export function renderScene({
 
   ctx.restore();
   renderHealthHud(ctx, player);
+  renderRefactorHud(ctx, player, timestamp);
   renderComboHud(ctx, stats);
   renderMinimap(ctx, player, enemies);
   return nextShake;

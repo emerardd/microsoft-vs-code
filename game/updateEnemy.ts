@@ -1,6 +1,7 @@
 import { COLORS, PLAYFIELD_WIDTH } from '../constants';
 import type { Enemy, EnemyProjectile, EnemyType, Player } from '../types';
 import { crossedFrameInterval } from '../utils/gameLogic';
+import { getBossSummonPlan } from './spawnDirector';
 
 interface EnemyUpdateContext {
   player: Player;
@@ -8,6 +9,7 @@ interface EnemyUpdateContext {
   enemyProjectiles: EnemyProjectile[];
   spawnEnemy: (type: EnemyType, x?: number, y?: number) => void;
   createExplosion: (x: number, y: number, color: string, count: number) => void;
+  activeMinionCount?: number;
   random?: () => number;
 }
 
@@ -79,6 +81,7 @@ export function updateEnemy(enemy: Enemy, context: EnemyUpdateContext): void {
     enemyProjectiles,
     spawnEnemy,
     createExplosion,
+    activeMinionCount = 0,
     random = Math.random,
   } = context;
   const previousAge = enemy.age;
@@ -281,13 +284,30 @@ export function updateEnemy(enemy: Enemy, context: EnemyUpdateContext): void {
     });
   }
 
-  const summonInterval = phase === 3 ? 135 : phase === 2 ? 180 : 250;
-  if (crossedFrameInterval(previousAge, enemy.age, summonInterval)) {
-    const leftType: EnemyType = wave >= 4 ? 'SPAGHETTI' : 'BUG';
-    const rightType: EnemyType = phase >= 2 && wave >= 3
-      ? 'MERGE_CONFLICT'
-      : 'SYNTAX_ERROR';
-    spawnEnemy(leftType, enemy.x, enemy.y + 80);
-    spawnEnemy(rightType, enemy.x + enemy.width, enemy.y + 80);
+  const summonPlan = getBossSummonPlan(wave, phase);
+  enemy.bossSummonCooldown = Math.max(
+    0,
+    (enemy.bossSummonCooldown ?? 0) - frameScale,
+  );
+  if (enemy.bossSummonCooldown <= 0) {
+    const availableSlots = Math.max(
+      0,
+      summonPlan.maxMinions - activeMinionCount,
+    );
+    const summonTypes = summonPlan.types.slice(0, availableSlots);
+    const centerX = enemy.x + enemy.width / 2;
+
+    summonTypes.forEach((type, index) => {
+      const offset = (index - (summonTypes.length - 1) / 2) * 48;
+      spawnEnemy(
+        type,
+        Math.max(0, Math.min(PLAYFIELD_WIDTH - 40, centerX + offset - 20)),
+        enemy.y + 72 + index % 2 * 16,
+      );
+    });
+
+    enemy.bossSummonCooldown = summonTypes.length > 0
+      ? summonPlan.intervalFrames
+      : Math.min(30, summonPlan.intervalFrames);
   }
 }

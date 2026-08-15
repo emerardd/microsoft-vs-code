@@ -52,7 +52,7 @@ describe('refactor ultimate', () => {
     expect(context.player.specialCharge).toBe(0);
     expect(context.onActivate).toHaveBeenCalledOnce();
     expect(context.enemies[0]).toMatchObject({ hp: 10, flashTimer: 10 });
-    expect(context.handleEnemyDefeat).toHaveBeenCalledWith(context.enemies[0]);
+    expect(context.handleEnemyDefeat).toHaveBeenCalledWith(context.enemies[0], false);
     expect(result.particle).toMatchObject({ id: 'shockwave', life: 1 });
   });
 

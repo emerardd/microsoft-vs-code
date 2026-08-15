@@ -41,6 +41,7 @@ interface EnemyDefeatContext {
   ) => void;
   random?: RandomSource;
   excludedUpgrades?: readonly UpgradeId[];
+  grantSpecialCharge?: boolean;
 }
 
 export interface EnemyDefeatResult {
@@ -69,6 +70,7 @@ export function resolveEnemyDefeat(
     addFloatingText,
     random = Math.random,
     excludedUpgrades = [],
+    grantSpecialCharge = true,
   }: EnemyDefeatContext,
 ): EnemyDefeatResult {
   if (enemy.hp > 0) return notDefeated();
@@ -93,10 +95,12 @@ export function resolveEnemyDefeat(
   stats.bugsFixed++;
   addComboStacks(stats);
 
-  player.specialCharge = Math.min(
-    MAX_SPECIAL_CHARGE,
-    player.specialCharge + SPECIAL_CHARGE_PER_KILL * comboBonuses.chargeMultiplier,
-  );
+  if (grantSpecialCharge) {
+    player.specialCharge = Math.min(
+      MAX_SPECIAL_CHARGE,
+      player.specialCharge + SPECIAL_CHARGE_PER_KILL * comboBonuses.chargeMultiplier,
+    );
+  }
 
   if (stats.combo > 1 && stats.combo % 5 === 0) {
     addFloatingText(

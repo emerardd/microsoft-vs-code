@@ -43,9 +43,10 @@ describe('entity factories', () => {
 
     expect(boss.type).toBe('MONOLITH');
     expect(boss.x).toBe(PLAYFIELD_WIDTH / 2 - boss.width / 2);
-    expect(boss.hp).toBe(1302);
+    expect(boss.hp).toBe(1365);
     expect(boss.scoreValue).toBe(6000);
     expect(boss.height).toBe(60);
+    expect(boss.bossSummonCooldown).toBe(0);
   });
 
   it('creates the projectile pattern for each weapon tier', () => {

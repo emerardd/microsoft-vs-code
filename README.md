@@ -48,8 +48,8 @@ Transform your coding workflow into an epic arcade shooter! Deploy your project 
 
 ### ⚔️ **Intense Gameplay**
 - **9 Unique Enemy Types**: From basic bugs 🪲 to merge conflicts ⚠️ to the terrifying MONOLITH boss
-- **Three-Phase Boss**: Monolith escalates from tracking shots to spread fire, faster movement, tougher minions, and a five-way final-phase burst
-- **Progressive Difficulty**: Enemy health, speed, rewards, spawn pressure, roster, and attacks scale across waves; every clear also grants modest baseline player growth
+- **Three-Phase Boss**: Monolith opens with a reinforcement squad, then escalates its minion budget, tracking shots, spread fire, movement, and five-way final-phase burst across later releases
+- **Progressive Difficulty**: Enemy health, speed, rewards, roster, and attacks scale across waves; ambient spawns use a smoother cadence with an on-screen cap while every clear grants modest baseline player growth
 - **Combo System**: Combos decay one stack at a time, gain one stack per 5% Boss health dealt, and grant capped score, damage, fire-rate, and ultimate-charge bonuses
 - **Local High Score**: Best run is saved to your browser and shown on the start screen and game-over screen
 - **Power-Ups**:
@@ -82,6 +82,7 @@ After defeating each Boss, the player receives +5 max HP, +2 ammo, and +4% base 
   - Animated combo meter
 - **Readable Combat HUD**:
   - Compact player HP/max display integrated into the canvas HUD
+  - Persistent `R` Refactor charge bar with percentage readout and a high-contrast ready state
   - Boss health bar with distinct Phase 2 and Phase 3 warning labels
 - **Frame-Rate Independent Movement**: Player, enemies, projectiles, and timers scale with real frame time for consistent gameplay across all machines
 
@@ -130,7 +131,7 @@ Survive increasingly difficult waves of coding errors and deploy your project! E
 ### Progression System
 - **Weapon Levels**: Compiler Upgrade permanently raises the weapon tier (max 5); Copilot only grants a temporary +1 tier for 8 seconds
 - **Ammo System**: 40 bullets max (expandable), auto-regenerates slowly, reload time 2.5s (reducible)
-- **Special Meter**: Charges by defeating enemies, unleash "Refactor" to clear the screen
+- **Special Meter**: The visible `R` bar charges from regular defeats and switches to a pulsing ready state before unleashing "Refactor"; enemies cleared by the ultimate do not recharge it
 - **Wave System**: Difficulty scales each version release (v1.0, v2.0, v3.0…)
 - **High Score**: Persisted locally via `localStorage`, displayed on start and game-over screens
 
@@ -198,6 +199,7 @@ microsoft-vs-code/
 │   ├── progression.ts      # Score, combo, wave, and defeat rewards
 │   ├── refactorUltimate.ts # Refactor ultimate ability
 │   ├── renderScene.ts      # Canvas scene renderer
+│   ├── spawnDirector.ts    # Ambient and Boss reinforcement pacing
 │   ├── updateEnemy.ts      # Enemy and boss behavior updates
 │   ├── upgrades.ts         # Wave-upgrade effects
 │   └── useGameInput.ts     # Keyboard input lifecycle

@@ -27,7 +27,7 @@ interface RefactorUltimateContext {
     vy?: number,
   ) => void;
   onActivate: () => void;
-  handleEnemyDefeat: (enemy: Enemy) => void;
+  handleEnemyDefeat: (enemy: Enemy, grantSpecialCharge?: boolean) => void;
 }
 
 export interface RefactorUltimateResult {
@@ -75,7 +75,9 @@ export function activateRefactorUltimate({
         COLORS.warning,
       );
     }
-    handleEnemyDefeat(enemy);
+    // Refactor kills still count for score, combo, drops, and release progress,
+    // but the ultimate must not recharge itself from its own area damage.
+    handleEnemyDefeat(enemy, false);
   });
 
   addFloatingText(

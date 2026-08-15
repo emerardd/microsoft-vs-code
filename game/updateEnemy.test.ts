@@ -108,4 +108,54 @@ describe('updateEnemy', () => {
     expect(enemyProjectiles).toHaveLength(5);
     expect(enemyProjectiles.every(projectile => projectile.label === '✖')).toBe(true);
   });
+
+  it('summons a squad immediately when a later-wave boss enters combat', () => {
+    const enemy = createEnemy({
+      type: 'MONOLITH',
+      x: 200,
+      y: 60,
+      width: 160,
+      height: 60,
+      hp: 600,
+      maxHp: 1000,
+      age: 120,
+      wave: 4,
+      bossSummonCooldown: 0,
+    });
+    const { spawnEnemy } = update(enemy);
+
+    expect(spawnEnemy).toHaveBeenCalledTimes(4);
+    expect(spawnEnemy.mock.calls.map(([type]) => type)).toEqual([
+      'ERROR_404',
+      'MERGE_CONFLICT',
+      'SYNTAX_ERROR',
+      'SPAGHETTI',
+    ]);
+    expect(enemy.bossSummonCooldown).toBe(130);
+  });
+
+  it('respects the boss minion cap before summoning reinforcements', () => {
+    const enemy = createEnemy({
+      type: 'MONOLITH',
+      y: 60,
+      hp: 200,
+      maxHp: 1000,
+      wave: 4,
+      bossSummonCooldown: 0,
+    });
+    const spawnEnemy = vi.fn();
+
+    updateEnemy(enemy, {
+      player: createInitialPlayer(),
+      frameScale: 1,
+      enemyProjectiles: [],
+      spawnEnemy,
+      createExplosion: vi.fn(),
+      activeMinionCount: 12,
+      random: () => 0.75,
+    });
+
+    expect(spawnEnemy).not.toHaveBeenCalled();
+    expect(enemy.bossSummonCooldown).toBe(30);
+  });
 });

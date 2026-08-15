@@ -28,6 +28,7 @@ import { updatePlayerSystem } from '../game/playerSystem';
 import { applyUpgrade } from '../game/upgrades';
 import { resolveEnemyDefeat } from '../game/progression';
 import { activateRefactorUltimate } from '../game/refactorUltimate';
+import { getAmbientSpawnPlan } from '../game/spawnDirector';
 import {
   prepareGameContext,
   resizeCanvasToDisplaySize,
@@ -149,7 +150,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
       sfxBossAppear();
   };
 
-  const handleEnemyDefeat = (enemy: Enemy) => {
+  const handleEnemyDefeat = (enemy: Enemy, grantSpecialCharge = true) => {
       const result = resolveEnemyDefeat(enemy, {
         player: playerRef.current,
         stats: statsRef.current,
@@ -161,6 +162,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
           ...(fastGcLevelRef.current >= 3 ? ['RELOAD' as const] : []),
           ...(overclockLevelRef.current >= 3 ? ['OVERCLOCK' as const] : []),
         ],
+        grantSpecialCharge,
       });
       if (!result.defeated) return;
 
@@ -317,11 +319,15 @@ const GameEngine: React.FC<GameEngineProps> = ({
         spawnBoss();
     }
 
-    const spawnRate = Math.max(
-      320,
-      1100 * Math.pow(0.88, statsRef.current.wave - 1),
-    );
-    if (timestamp - lastSpawnTimeRef.current > spawnRate && !statsRef.current.bossActive) {
+    const spawnPlan = getAmbientSpawnPlan(statsRef.current.wave);
+    const activeMinionCount = enemiesRef.current.filter(
+      enemy => enemy.type !== 'MONOLITH',
+    ).length;
+    if (
+      timestamp - lastSpawnTimeRef.current > spawnPlan.intervalMs
+      && activeMinionCount < spawnPlan.maxConcurrentEnemies
+      && !statsRef.current.bossActive
+    ) {
         spawnEnemy('RANDOM');
         lastSpawnTimeRef.current = timestamp;
     }
@@ -338,6 +344,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
         enemyProjectiles: enemyProjectilesRef.current,
         spawnEnemy,
         createExplosion,
+        activeMinionCount,
       });
     });
 

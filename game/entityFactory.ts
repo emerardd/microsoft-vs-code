@@ -110,7 +110,7 @@ export function createBoss(
   random: RandomSource = Math.random,
 ): Enemy {
   const definition = selectEnemyDefinition('MONOLITH', wave, random);
-  const hp = definition.hp * 1.75 * Math.pow(1.24, Math.max(0, wave - 1));
+  const hp = definition.hp * 1.75 * Math.pow(1.3, Math.max(0, wave - 1));
 
   return {
     id: `boss-${random()}`,
@@ -130,6 +130,7 @@ export function createBoss(
     flashTimer: 0,
     wave,
     bossComboDamage: 0,
+    bossSummonCooldown: 0,
   };
 }
 

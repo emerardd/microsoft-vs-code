@@ -67,6 +67,7 @@ export interface Enemy extends Entity {
   flashTimer: number; // For hit feedback
   wave?: number; // Spawn wave, used to scale enemy abilities
   bossComboDamage?: number; // Unbanked damage toward the next Boss combo stack
+  bossSummonCooldown?: number; // Frames until the Monolith can summon again
 }
 
 export interface Particle extends Entity {

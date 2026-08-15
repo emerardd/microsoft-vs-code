@@ -63,6 +63,23 @@ describe('enemy defeat progression', () => {
     expect(context.player.specialCharge).toBe(6);
   });
 
+  it('keeps all defeat rewards except charge when the kill came from Refactor', () => {
+    const context = createContext();
+    context.player.specialCharge = 0;
+    context.stats.combo = 4;
+
+    const result = resolveEnemyDefeat(createEnemy(), {
+      ...context,
+      grantSpecialCharge: false,
+    });
+
+    expect(result.defeated).toBe(true);
+    expect(context.player.specialCharge).toBe(0);
+    expect(context.stats.score).toBeGreaterThan(0);
+    expect(context.stats.combo).toBe(5);
+    expect(context.stats.levelProgress).toBe(1);
+  });
+
   it('splits a merge conflict into two smaller bugs', () => {
     const context = createContext();
 
