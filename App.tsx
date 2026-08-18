@@ -671,9 +671,9 @@ export default function App() {
   };
 
   return (
-    <div className="relative flex h-screen w-screen select-none overflow-hidden font-mono text-[#cccccc]">
+    <div className="workbench-shell relative flex w-screen select-none overflow-hidden font-mono text-[#cccccc]">
       {/* Activity Bar (Left) */}
-      <div className="z-[80] flex w-12 shrink-0 flex-col items-center border-r border-[#252526] bg-[#333333] py-2 md:z-10 md:w-14">
+      <div className="activity-bar z-[80] hidden w-12 shrink-0 flex-col items-center border-r border-[#252526] bg-[#333333] py-2 md:z-10 md:flex md:w-14">
         <VscLogo className="mb-6 mt-2 h-9 w-9 md:h-10 md:w-10" />
         <SidebarIcon active={sidebarView === 'EXPLORER'} onClick={() => handleSidebarSelect('EXPLORER')} title={t('ttExplorer')}>
             <FilesIcon />
@@ -695,7 +695,7 @@ export default function App() {
 
       {/* Sidebar */}
       {sidebarVisible && (
-      <div className="relative hidden w-64 shrink-0 flex-col border-r border-[#1e1e1e] bg-[#252526] md:flex">
+      <div className="desktop-sidebar relative hidden w-64 shrink-0 flex-col border-r border-[#1e1e1e] bg-[#252526] md:flex">
         <div className="flex items-center justify-between px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-500">
             <span>{sidebarView}</span>
             <button
@@ -741,11 +741,11 @@ export default function App() {
         <>
           <button
             type="button"
-            className="absolute inset-0 z-[60] bg-black/50 md:hidden"
+            className="mobile-sidebar-backdrop absolute inset-0 z-[60] bg-black/50 md:hidden"
             aria-label={t('closeSidebar')}
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <aside className="absolute bottom-6 left-12 top-0 z-[70] flex w-[min(18rem,calc(100vw-3rem))] flex-col border-r border-[#454545] bg-[#252526] shadow-2xl md:hidden">
+          <aside className="mobile-sidebar-drawer absolute bottom-0 left-0 top-0 z-[70] flex w-[min(18rem,calc(100vw-2rem))] flex-col border-r border-[#454545] bg-[#252526] shadow-2xl md:hidden">
             <div className="flex items-center justify-between border-b border-[#3c3c3c] px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-400">
               <span>{sidebarView}</span>
               <button
@@ -768,6 +768,15 @@ export default function App() {
       <div className="flex-1 flex flex-col bg-[#1e1e1e] relative min-w-0">
         {/* Tabs */}
         <div className="h-9 bg-[#252526] flex items-center overflow-x-auto border-b border-[#1e1e1e] shrink-0">
+          <button
+            type="button"
+            className="mobile-menu-button flex h-full w-11 shrink-0 items-center justify-center border-r border-[#1e1e1e] text-gray-400 hover:bg-[#2a2d2e] hover:text-white md:hidden"
+            aria-label={t('ttExplorer')}
+            aria-expanded={mobileSidebarOpen}
+            onClick={() => handleSidebarSelect('EXPLORER')}
+          >
+            <span className="text-xl leading-none" aria-hidden="true">☰</span>
+          </button>
           {openDocuments.map(document => {
             const details = EDITOR_DOCUMENTS[document];
             const active = activeDocument === document;
@@ -802,7 +811,7 @@ export default function App() {
         </div>
 
         {/* Breadcrumbs */}
-        <div className="h-6 flex items-center px-4 text-xs text-gray-500 bg-[#1e1e1e] border-b border-[#1e1e1e] shrink-0">
+        <div className="editor-breadcrumbs hidden h-6 shrink-0 items-center border-b border-[#1e1e1e] bg-[#1e1e1e] px-4 text-xs text-gray-500 sm:flex">
           {activeDocument === 'GAME' && <>src &gt; components &gt; game &gt; <span className="ml-1 flex items-center text-[#dcdcaa]"><span className="mr-1 text-purple-400">def</span> render()</span></>}
           {activeDocument === 'ENEMIES' && <>src &gt; data &gt; <span className="ml-1 text-[#e06c75]">enemies.json</span></>}
           {activeDocument === 'METADATA' && <>project &gt; <span className="ml-1 text-[#e06c75]">metadata.json</span></>}
@@ -824,8 +833,8 @@ export default function App() {
 
             {/* Start Screen Overlay */}
             {gameState === GameState.START && (
-              <div className="absolute inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto bg-[#1e1e1e]/95 p-4">
-                 <div className="mb-3 transform transition-transform duration-500 hover:scale-110 md:mb-8">
+              <div className="start-overlay absolute inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-[#1e1e1e]/95 px-4 py-5 sm:justify-center">
+                 <div className="mb-2 transform transition-transform duration-500 hover:scale-110 md:mb-8">
                     <VscLogo className="h-16 w-16 md:h-24 md:w-24" />
                  </div>
                  <h1 className="mb-2 text-center font-sans text-2xl font-bold tracking-tight text-[#007acc] md:text-4xl">{t('appTitle')}</h1>
@@ -851,7 +860,17 @@ export default function App() {
                    </div>
                  )}
 
-                 <div className="mb-5 grid max-w-2xl grid-cols-1 gap-3 text-sm text-gray-400 sm:grid-cols-2 sm:gap-12 md:mb-8">
+                 <div className="mobile-start-guide mb-4 w-full max-w-sm border-y border-[#3c3c3c] py-3 text-center text-sm leading-6 text-gray-300 sm:hidden">
+                    <span className="text-[#569cd6]">D-PAD</span> {t('ctrlMove')}
+                    <span className="mx-2 text-gray-600">·</span>
+                    <span className="text-[#9cdcfe]">&lt;/&gt;</span> {t('ctrlShoot')}
+                    <br />
+                    <span className="text-[#c586c0]">R</span> {t('ctrlRefactor')}
+                    <span className="mx-2 text-gray-600">·</span>
+                    <span className="text-[#dcdcaa]">Ⅱ</span> {t('ctrlPause')}
+                 </div>
+
+                 <div className="desktop-start-guide mb-5 hidden max-w-2xl grid-cols-1 gap-3 text-sm text-gray-400 sm:grid sm:grid-cols-2 sm:gap-12 md:mb-8">
                     <div className="border-b border-gray-600 pb-3 text-left sm:border-b-0 sm:border-r sm:pr-8 sm:text-right">
                         <h3 className="font-bold text-white mb-2 text-lg">{t('controlsTitle')}</h3>
                         <p className="mb-1"><span className="text-[#569cd6]">WASD</span> : {t('ctrlMove')}</p>
@@ -872,7 +891,7 @@ export default function App() {
 
                  <button
                    onClick={startFreshRun}
-                   className="px-8 py-3 bg-[#0e639c] hover:bg-[#1177bb] text-white font-semibold rounded-sm shadow-lg transition-colors"
+                   className="min-h-12 px-8 py-3 bg-[#0e639c] hover:bg-[#1177bb] text-white font-semibold rounded-sm shadow-lg transition-colors"
                  >
                    {t('startBtn')}
                  </button>
@@ -881,7 +900,7 @@ export default function App() {
 
             {/* Game Over Overlay */}
             {gameState === GameState.GAME_OVER && (
-              <div className="absolute inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto bg-[#750e0e]/95 p-4 animate-in fade-in duration-300">
+              <div className="absolute inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-[#750e0e]/95 p-4 pt-8 animate-in fade-in duration-300 sm:justify-center sm:pt-4">
                  <h1 className="mb-2 text-center text-4xl font-bold text-white md:text-6xl">{t('buildFailed')}</h1>
                  <p className="text-red-200 mb-8 font-mono text-xl">
                     <span className="text-gray-400">{t('exitCode')}</span> 1
@@ -922,8 +941,8 @@ export default function App() {
 
             {/* Wave Upgrade Overlay */}
             {gameState === GameState.UPGRADE && (
-              <div className="absolute inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto bg-black/80 p-4">
-                 <div className="text-center mb-6">
+              <div className="absolute inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-black/80 p-3 pt-5 sm:justify-center sm:p-4">
+                 <div className="mb-4 text-center sm:mb-6">
                    <div className="text-[#4ec9b0] text-xs font-mono mb-1 uppercase tracking-widest">{t('waveDeployed', { wave: stats.wave - 1 })}</div>
                    <h2 className="text-3xl font-bold text-white mb-1">{t('chooseUpgrade')}</h2>
                     <p className="text-gray-400 text-sm font-mono">{t('upgradeSubtitle')}</p>
@@ -935,16 +954,16 @@ export default function App() {
                      <button
                        key={opt.id}
                        onClick={() => handleSelectUpgrade(opt.id)}
-                       className="flex-1 border border-[#3c3c3c] bg-[#252526] hover:bg-[#2a2d2e] hover:border-[#007acc] rounded p-4 text-left transition-all group"
+                       className="min-h-20 flex-1 border border-[#3c3c3c] bg-[#252526] hover:bg-[#2a2d2e] hover:border-[#007acc] rounded p-3 text-left transition-all group sm:p-4"
                      >
-                       <div className="text-3xl mb-3">{opt.icon}</div>
+                       <div className="mb-1 text-2xl sm:mb-3 sm:text-3xl">{opt.icon}</div>
                        <div className="text-[#007acc] font-bold text-sm mb-1 group-hover:text-white transition-colors">{tUpgrade(opt.id, 'title')}</div>
                        <div className="text-gray-400 text-xs leading-relaxed">{tUpgrade(opt.id, 'desc')}</div>
                      </button>
                    ))}
                  </div>
 
-                 <p className="mt-6 text-gray-600 text-xs font-mono">{t('clickToConfirm')}</p>
+                 <p className="mt-4 text-gray-600 text-xs font-mono sm:mt-6">{t('clickToConfirm')}</p>
                </div>
              )}
           </div>
@@ -952,7 +971,7 @@ export default function App() {
         </div>
 
         {/* Terminal / Bottom Panel */}
-        <div className="hidden h-40 shrink-0 flex-col border-t border-[#414141] bg-[#1e1e1e] md:flex">
+        <div className="bottom-panel hidden h-40 shrink-0 flex-col border-t border-[#414141] bg-[#1e1e1e] md:flex">
           <div className="flex text-xs px-4 py-2 border-b border-[#414141] bg-[#1e1e1e]">
             {([
               ['PROBLEMS', t('termProblems')],
@@ -1004,13 +1023,13 @@ export default function App() {
       )}
 
       {/* Status Bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-6 bg-[#007acc] text-white flex items-center text-xs px-3 justify-between z-50 cursor-default">
-        <div className="flex items-center gap-4">
+      <div className="status-bar absolute bottom-0 left-0 right-0 bg-[#007acc] text-white flex items-center text-xs px-2 sm:px-3 justify-between z-50 cursor-default">
+        <div className="flex items-center gap-2 sm:gap-4">
           <button type="button" className="flex items-center rounded px-1 hover:bg-white/20" title={t('statusErrors')} onClick={() => openBottomPanel('PROBLEMS')}><span className="mr-1">⊗</span> 0</button>
           <button type="button" className="flex items-center rounded px-1 hover:bg-white/20" title={t('statusWarnings')} onClick={() => openBottomPanel('PROBLEMS')}><span className="mr-1">⚠</span> {Math.max(0, 10 - stats.bugsFixed)}</button>
-          <button type="button" className="flex items-center rounded px-1 hover:bg-white/20" title={t('statusBranch')} onClick={() => handleSidebarSelect('GIT')}>main*</button>
+          <button type="button" className="hidden items-center rounded px-1 hover:bg-white/20 min-[360px]:flex" title={t('statusBranch')} onClick={() => handleSidebarSelect('GIT')}>main*</button>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 sm:gap-4">
           <button
             type="button"
             className="hidden rounded px-1 hover:bg-white/20 sm:inline"
@@ -1029,7 +1048,7 @@ export default function App() {
           >
             UTF-8
           </button>
-          <button type="button" className="rounded px-1 hover:bg-white/20" title={t('statusFps')} onClick={() => openBottomPanel('DEBUG')}>{stats.fps} FPS</button>
+          <button type="button" className="hidden rounded px-1 hover:bg-white/20 min-[360px]:inline" title={t('statusFps')} onClick={() => openBottomPanel('DEBUG')}>{stats.fps} FPS</button>
           <button
             type="button"
             className="flex items-center px-1 hover:bg-white/20"

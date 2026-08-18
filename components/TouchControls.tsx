@@ -11,6 +11,8 @@ export type TouchControlCode =
 
 interface TouchControlsProps {
   onControlChange: (code: TouchControlCode, pressed: boolean) => void;
+  onPauseToggle: () => void;
+  paused: boolean;
 }
 
 interface HoldButtonProps {
@@ -18,6 +20,7 @@ interface HoldButtonProps {
   label: string;
   ariaLabel: string;
   className?: string;
+  disabled?: boolean;
   onControlChange: TouchControlsProps['onControlChange'];
 }
 
@@ -26,6 +29,7 @@ const HoldButton = ({
   label,
   ariaLabel,
   className = '',
+  disabled = false,
   onControlChange,
 }: HoldButtonProps) => {
   const release = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -37,7 +41,8 @@ const HoldButton = ({
     <button
       type="button"
       aria-label={ariaLabel}
-      className={`touch-key flex h-11 w-11 items-center justify-center border border-[#5a5a5a] bg-[#252526]/90 text-sm font-bold text-white shadow-lg shadow-black/40 active:border-[#9cdcfe] active:bg-[#094771] ${className}`}
+      disabled={disabled}
+      className={`touch-key flex items-center justify-center border border-[#5a5a5a] bg-[#252526]/95 text-sm font-bold text-white shadow-lg shadow-black/40 active:border-[#9cdcfe] active:bg-[#094771] disabled:opacity-35 ${className}`}
       onPointerDown={(event) => {
         event.preventDefault();
         event.currentTarget.setPointerCapture(event.pointerId);
@@ -53,10 +58,10 @@ const HoldButton = ({
   );
 };
 
-const TouchControls = ({ onControlChange }: TouchControlsProps) => (
-  <div className="pointer-events-none absolute inset-x-2 bottom-8 z-40 flex items-end justify-between md:hidden">
+const TouchControls = ({ onControlChange, onPauseToggle, paused }: TouchControlsProps) => (
+  <div className="touch-controls pointer-events-none z-40 md:hidden">
     <div
-      className="pointer-events-auto grid grid-cols-3 grid-rows-2 gap-1"
+      className="touch-movement pointer-events-auto grid grid-cols-3 grid-rows-2 gap-1"
       role="group"
       aria-label={t('touchMove')}
     >
@@ -64,45 +69,60 @@ const TouchControls = ({ onControlChange }: TouchControlsProps) => (
         code="ArrowUp"
         label="↑"
         ariaLabel={`${t('touchMove')}: ↑`}
-        className="col-start-2"
+        className="col-start-2 h-12 w-12 rounded-t-lg"
+        disabled={paused}
         onControlChange={onControlChange}
       />
       <HoldButton
         code="ArrowLeft"
         label="←"
         ariaLabel={`${t('touchMove')}: ←`}
-        className="col-start-1 row-start-2"
+        className="col-start-1 row-start-2 h-12 w-12 rounded-l-lg"
+        disabled={paused}
         onControlChange={onControlChange}
       />
       <HoldButton
         code="ArrowDown"
         label="↓"
         ariaLabel={`${t('touchMove')}: ↓`}
-        className="col-start-2 row-start-2"
+        className="col-start-2 row-start-2 h-12 w-12 rounded-b-lg"
+        disabled={paused}
         onControlChange={onControlChange}
       />
       <HoldButton
         code="ArrowRight"
         label="→"
         ariaLabel={`${t('touchMove')}: →`}
-        className="col-start-3 row-start-2"
+        className="col-start-3 row-start-2 h-12 w-12 rounded-r-lg"
+        disabled={paused}
         onControlChange={onControlChange}
       />
     </div>
 
-    <div className="pointer-events-auto flex items-end gap-2">
+    <button
+      type="button"
+      className="touch-pause pointer-events-auto flex h-11 min-w-11 items-center justify-center rounded-md border border-[#5a5a5a] bg-[#252526]/95 px-3 text-base font-bold text-[#dcdcaa] shadow-lg shadow-black/40 active:border-[#dcdcaa] active:bg-[#3c3c3c]"
+      aria-label={paused ? t('touchResume') : t('touchPause')}
+      onClick={onPauseToggle}
+    >
+      {paused ? '▶' : 'Ⅱ'}
+    </button>
+
+    <div className="touch-actions pointer-events-auto flex items-end gap-2">
       <HoldButton
         code="KeyR"
         label="R"
         ariaLabel={t('touchRefactor')}
-        className="h-12 w-12 rounded-full border-[#c586c0] text-[#e8c7e8]"
+        className="h-14 w-14 rounded-full border-[#c586c0] text-[#e8c7e8]"
+        disabled={paused}
         onControlChange={onControlChange}
       />
       <HoldButton
         code="Space"
         label="</>"
         ariaLabel={t('touchShoot')}
-        className="h-16 w-16 rounded-full border-[#007acc] bg-[#094771]/95 text-[#9cdcfe]"
+        className="h-[4.5rem] w-[4.5rem] rounded-full border-[#007acc] bg-[#094771]/95 text-[#9cdcfe]"
+        disabled={paused}
         onControlChange={onControlChange}
       />
     </div>

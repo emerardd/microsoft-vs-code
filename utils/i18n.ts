@@ -219,6 +219,8 @@ const STRINGS = {
     touchMove:    'Touch movement controls',
     touchShoot:   'Hold to shoot',
     touchRefactor:'Run refactor ultimate',
+    touchPause:   'Pause game',
+    touchResume:  'Resume game',
 
     // ── Terminal tabs ─────────────────────────────────────────────────────
     termProblems: 'Problems',
@@ -466,6 +468,8 @@ const STRINGS = {
     touchMove:    '触控移动',
     touchShoot:   '按住射击',
     touchRefactor:'释放重构大招',
+    touchPause:   '暂停游戏',
+    touchResume:  '继续游戏',
 
     // ── Terminal tabs ─────────────────────────────────────────────────────
     termProblems: '问题',

@@ -413,26 +413,33 @@ const GameEngine: React.FC<GameEngineProps> = ({
     setControlPressed(keysRef, code, pressed);
   }, []);
 
+  const handlePauseToggle = useCallback(() => {
+    keysRef.current.clear();
+    setGameState(previous => (
+      previous === GameState.PLAYING ? GameState.PAUSED : GameState.PLAYING
+    ));
+  }, [setGameState]);
+
   return (
-    <>
-      <canvas
-        ref={canvasRef}
-        width={CANVAS_WIDTH}
-        height={CANVAS_HEIGHT}
-        role="img"
-        aria-label={t('gameCanvasLabel')}
-        className="cursor-none border border-[#333] shadow-2xl shadow-black"
-        style={{
-          width: `${CANVAS_WIDTH}px`,
-          height: `${CANVAS_HEIGHT}px`,
-          maxWidth: '100%',
-          maxHeight: '100%',
-        }}
-      />
-      {gameState === GameState.PLAYING && (
-        <TouchControls onControlChange={handleTouchControl} />
+    <div className={`game-shell ${gameState === GameState.PLAYING || gameState === GameState.PAUSED ? 'game-shell--active' : ''}`}>
+      <div className="game-canvas-stage">
+        <canvas
+          ref={canvasRef}
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+          role="img"
+          aria-label={t('gameCanvasLabel')}
+          className="game-canvas cursor-none border border-[#333] shadow-2xl shadow-black"
+        />
+      </div>
+      {(gameState === GameState.PLAYING || gameState === GameState.PAUSED) && (
+        <TouchControls
+          onControlChange={handleTouchControl}
+          onPauseToggle={handlePauseToggle}
+          paused={gameState === GameState.PAUSED}
+        />
       )}
-    </>
+    </div>
   );
 };
 

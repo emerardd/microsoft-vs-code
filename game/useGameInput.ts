@@ -52,15 +52,24 @@ export function useGameInput(
     };
 
     const clearKeys = () => keysRef.current.clear();
+    const pauseWhenHidden = () => {
+      if (document.visibilityState !== 'hidden') return;
+      clearKeys();
+      setGameState(previous => (
+        previous === GameState.PLAYING ? GameState.PAUSED : previous
+      ));
+    };
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('blur', clearKeys);
+    document.addEventListener('visibilitychange', pauseWhenHidden);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', clearKeys);
+      document.removeEventListener('visibilitychange', pauseWhenHidden);
     };
   }, [keysRef, setGameState]);
 }
