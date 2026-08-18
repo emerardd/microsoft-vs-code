@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { MAX_SPECIAL_CHARGE, PLAYFIELD_WIDTH } from '../constants';
+import {
+  AMMO_REGEN_DELAY_MS,
+  MAX_SPECIAL_CHARGE,
+  PLAYFIELD_WIDTH,
+} from '../constants';
 import { createInitialGameStats, createInitialPlayer } from '../utils/gameState';
 import { updatePlayerSystem } from './playerSystem';
 
@@ -56,6 +60,42 @@ describe('player system', () => {
     expect(result.lastFireTime).toBe(context.timestamp);
     expect(context.player.ammo).toBe(context.player.maxAmmo - 1);
     expect(context.stats.linesOfCode).toBe(1);
+  });
+
+  it('does not regenerate ammo between rapid tap shots', () => {
+    const context = createContext();
+    context.player.ammo = 10;
+    context.keys.add('Space');
+
+    const firstShot = updatePlayerSystem(context);
+    context.lastFireTime = firstShot.lastFireTime;
+    expect(context.player.ammo).toBe(9);
+
+    context.keys.delete('Space');
+    context.timestamp += 16;
+    updatePlayerSystem(context);
+    expect(context.player.ammo).toBe(9);
+
+    context.keys.add('Space');
+    context.timestamp += 200;
+    const secondShot = updatePlayerSystem(context);
+
+    expect(secondShot.projectiles).toHaveLength(1);
+    expect(context.player.ammo).toBe(8);
+  });
+
+  it('regenerates ammo only after the post-fire cooldown', () => {
+    const context = createContext();
+    context.player.ammo = 10;
+    context.lastFireTime = 200;
+    context.timestamp = context.lastFireTime + AMMO_REGEN_DELAY_MS - 1;
+
+    updatePlayerSystem(context);
+    expect(context.player.ammo).toBe(10);
+
+    context.timestamp += 1;
+    updatePlayerSystem(context);
+    expect(context.player.ammo).toBeCloseTo(10.4);
   });
 
   it('turns a high combo into a noticeable fire-rate bonus', () => {

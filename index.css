@@ -51,8 +51,12 @@ input:focus-visible {
   background: #4f4f4f;
 }
 
+.touch-controls,
+.touch-controls button,
 .touch-key {
   touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
   -webkit-user-select: none;
   user-select: none;
 }

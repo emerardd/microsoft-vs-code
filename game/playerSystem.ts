@@ -1,5 +1,6 @@
 import {
   AMMO_REGEN,
+  AMMO_REGEN_DELAY_MS,
   CANVAS_HEIGHT,
   COLORS,
   MAX_SPECIAL_CHARGE,
@@ -100,7 +101,11 @@ export function updatePlayerSystem({
       player.ammo = player.maxAmmo;
       addFloatingText(player.x, player.y - 20, t('gcComplete'), COLORS.class);
     }
-  } else if (!keys.has('Space') && player.ammo < player.maxAmmo) {
+  } else if (
+    !keys.has('Space')
+    && player.ammo < player.maxAmmo
+    && timestamp - lastFireTime >= AMMO_REGEN_DELAY_MS
+  ) {
     player.ammo = regenerateAmmo(
       player.ammo,
       player.maxAmmo,

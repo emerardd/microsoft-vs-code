@@ -40,6 +40,7 @@ const HoldButton = ({
   return (
     <button
       type="button"
+      draggable={false}
       aria-label={ariaLabel}
       disabled={disabled}
       className={`touch-key flex items-center justify-center border border-[#5a5a5a] bg-[#252526]/95 text-sm font-bold text-white shadow-lg shadow-black/40 active:border-[#9cdcfe] active:bg-[#094771] disabled:opacity-35 ${className}`}
@@ -59,7 +60,11 @@ const HoldButton = ({
 };
 
 const TouchControls = ({ onControlChange, onPauseToggle, paused }: TouchControlsProps) => (
-  <div className="touch-controls pointer-events-none z-40 md:hidden">
+  <div
+    className="touch-controls pointer-events-none z-40 md:hidden"
+    onContextMenu={(event) => event.preventDefault()}
+    onDragStart={(event) => event.preventDefault()}
+  >
     <div
       className="touch-movement pointer-events-auto grid grid-cols-3 grid-rows-2 gap-1"
       role="group"
@@ -101,9 +106,11 @@ const TouchControls = ({ onControlChange, onPauseToggle, paused }: TouchControls
 
     <button
       type="button"
+      draggable={false}
       className="touch-pause pointer-events-auto flex h-11 min-w-11 items-center justify-center rounded-md border border-[#5a5a5a] bg-[#252526]/95 px-3 text-base font-bold text-[#dcdcaa] shadow-lg shadow-black/40 active:border-[#dcdcaa] active:bg-[#3c3c3c]"
       aria-label={paused ? t('touchResume') : t('touchPause')}
       onClick={onPauseToggle}
+      onContextMenu={(event) => event.preventDefault()}
     >
       {paused ? '▶' : 'Ⅱ'}
     </button>
