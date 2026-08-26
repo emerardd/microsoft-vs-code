@@ -1,7 +1,7 @@
 {
-  "name": "bug-barrage",
-  "displayName": "Bug Barrage",
-  "description": "A one-key arcade break game for Visual Studio Code.",
+  "name": "macrohard-vs-code",
+  "displayName": "%displayName%",
+  "description": "%description%",
   "version": "0.1.0",
   "publisher": "emerardd",
   "license": "MIT",
@@ -27,15 +27,15 @@
   "contributes": {
     "commands": [
       {
-        "command": "bugBarrage.toggleGame",
-        "title": "Toggle Game",
-        "category": "Bug Barrage",
+        "command": "macrohardVsCode.toggleGame",
+        "title": "%command.toggleGame.title%",
+        "category": "%displayName%",
         "icon": "$(game)"
       }
     ],
     "keybindings": [
       {
-        "command": "bugBarrage.toggleGame",
+        "command": "macrohardVsCode.toggleGame",
         "key": "ctrl+alt+g",
         "mac": "cmd+alt+g"
       }

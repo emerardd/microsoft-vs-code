@@ -6,7 +6,7 @@ import { runTests } from '@vscode/test-electron';
 async function main(): Promise<void> {
   const extensionDevelopmentPath = path.resolve(__dirname, '..', '..');
   const extensionTestsPath = path.resolve(__dirname, 'suite', 'index');
-  const isolatedRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'bug-barrage-vscode-test-'));
+  const isolatedRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'macrohard-vs-code-test-'));
   const userDataDir = path.join(isolatedRoot, 'user-data');
   const extensionsDir = path.join(isolatedRoot, 'extensions');
   const vscodeExecutablePath = process.env.VSCODE_EXECUTABLE_PATH;
@@ -35,6 +35,6 @@ async function main(): Promise<void> {
 }
 
 main().catch(error => {
-  console.error('Bug Barrage integration tests failed.', error);
+  console.error('Macrohard vs Code integration tests failed.', error);
   process.exitCode = 1;
 });

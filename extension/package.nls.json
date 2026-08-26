@@ -1,0 +1,5 @@
+{
+  "displayName": "Macrohard vs Code",
+  "description": "A one-key arcade break game for Visual Studio Code.",
+  "command.toggleGame.title": "Toggle Game"
+}

@@ -1,10 +1,10 @@
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
 
-const EXTENSION_ID = 'emerardd.bug-barrage';
-const COMMAND_ID = 'bugBarrage.toggleGame';
-const DIAGNOSTICS_COMMAND_ID = 'bugBarrage.internal.getDiagnostics';
-const VIEW_TYPE = 'bugBarrage.game';
+const EXTENSION_ID = 'emerardd.macrohard-vs-code';
+const COMMAND_ID = 'macrohardVsCode.toggleGame';
+const DIAGNOSTICS_COMMAND_ID = 'macrohardVsCode.internal.getDiagnostics';
+const VIEW_TYPE = 'macrohardVsCode.game';
 
 interface ExtensionDiagnostics {
   panelExists: boolean;
@@ -26,7 +26,7 @@ function isGameTabActive(): boolean {
   return input instanceof vscode.TabInputWebview && input.viewType.endsWith(VIEW_TYPE);
 }
 
-suite('Bug Barrage extension', () => {
+suite('Macrohard vs Code extension', () => {
   test('toggles from code to the retained game panel and back', async () => {
     const extension = vscode.extensions.getExtension(EXTENSION_ID);
     assert.ok(extension, `Expected ${EXTENSION_ID} to be installed in the test host.`);

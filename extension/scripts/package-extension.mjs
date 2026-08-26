@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const extensionRoot = process.cwd();
 const outputDirectory = path.resolve(extensionRoot, '..', 'artifacts');
-const outputPath = path.join(outputDirectory, 'bug-barrage-0.1.0.vsix');
+const outputPath = path.join(outputDirectory, 'macrohard-vs-code-0.1.0.vsix');
 const vsceCli = path.join(extensionRoot, 'node_modules', '@vscode', 'vsce', 'vsce');
 
 mkdirSync(outputDirectory, { recursive: true });

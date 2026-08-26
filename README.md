@@ -273,7 +273,7 @@ Lightweight procedural audio:
 
 ## 🧩 VS Code Extension
 
-The `extension/` package builds the game as **Bug Barrage**, a self-contained Webview extension with no workspace or network access. Press `Ctrl+Alt+G` (`Cmd+Alt+G` on macOS) to open the game, then use the same shortcut to pause and return to the previously active editor. The hidden Webview is retained so the current run resumes instead of restarting.
+The `extension/` package builds the game as **Macrohard vs Code** (Simplified Chinese: **巨硬大战代码**), a self-contained Webview extension with no workspace or network access. Press `Ctrl+Alt+G` (`Cmd+Alt+G` on macOS) to open the game, then use the same shortcut to pause and return to the previously active editor. The hidden Webview is retained so the current run resumes instead of restarting.
 
 ```bash
 # Install extension-only build and packaging dependencies
@@ -282,7 +282,7 @@ npm --prefix extension install
 # Unit tests, Webview build, extension-host typecheck/build, and package inventory
 npm run verify:extension
 
-# Create artifacts/bug-barrage-0.1.0.vsix
+# Create artifacts/macrohard-vs-code-0.1.0.vsix
 npm run package:extension
 ```
 

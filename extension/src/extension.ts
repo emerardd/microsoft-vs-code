@@ -2,11 +2,19 @@ import * as vscode from 'vscode';
 import { decideToggleAction } from './toggleDecision';
 import { createNonce, createWebviewHtml } from './webviewHtml';
 
-const COMMAND_ID = 'bugBarrage.toggleGame';
-const DIAGNOSTICS_COMMAND_ID = 'bugBarrage.internal.getDiagnostics';
-const VIEW_TYPE = 'bugBarrage.game';
-const GAME_ACTIVE_CONTEXT = 'bugBarrage.gameActive';
+const COMMAND_ID = 'macrohardVsCode.toggleGame';
+const DIAGNOSTICS_COMMAND_ID = 'macrohardVsCode.internal.getDiagnostics';
+const VIEW_TYPE = 'macrohardVsCode.game';
+const GAME_ACTIVE_CONTEXT = 'macrohardVsCode.gameActive';
 const PREVIOUS_EDITOR_COMMAND = 'workbench.action.openPreviousRecentlyUsedEditorInGroup';
+
+const isSimplifiedChinese = ['zh-cn', 'zh-hans'].some(language => (
+  vscode.env.language.toLowerCase().startsWith(language)
+));
+const BRAND_NAME = isSimplifiedChinese ? '巨硬大战代码' : 'Macrohard vs Code';
+const STATUS_TOOLTIP = isSimplifiedChinese
+  ? '切换巨硬大战代码（Ctrl+Alt+G）'
+  : 'Toggle Macrohard vs Code (Ctrl+Alt+G)';
 
 let currentPanel: vscode.WebviewPanel | undefined;
 let panelIsActive = false;
@@ -37,9 +45,11 @@ function configurePanel(panel: vscode.WebviewPanel, context: vscode.ExtensionCon
 
   panel.webview.html = createWebviewHtml({
     cspSource: panel.webview.cspSource,
+    language: isSimplifiedChinese ? 'zh-CN' : 'en',
     nonce: createNonce(),
     scriptUri: scriptUri.toString(),
     styleUri: styleUri.toString(),
+    title: BRAND_NAME,
   });
 
   panel.webview.onDidReceiveMessage(
@@ -81,7 +91,7 @@ function createPanel(context: vscode.ExtensionContext): vscode.WebviewPanel {
   const mediaRoot = vscode.Uri.joinPath(context.extensionUri, 'media');
   const panel = vscode.window.createWebviewPanel(
     VIEW_TYPE,
-    'Bug Barrage',
+    BRAND_NAME,
     vscode.ViewColumn.Active,
     {
       enableScripts: true,
@@ -124,8 +134,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   statusBarItem.command = COMMAND_ID;
-  statusBarItem.text = '$(game) Bug Barrage';
-  statusBarItem.tooltip = 'Toggle Bug Barrage (Ctrl+Alt+G)';
+  statusBarItem.text = `$(game) ${BRAND_NAME}`;
+  statusBarItem.tooltip = STATUS_TOOLTIP;
   statusBarItem.show();
   context.subscriptions.push(statusBarItem);
 }

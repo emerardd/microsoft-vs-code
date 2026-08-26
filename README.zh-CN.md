@@ -275,7 +275,7 @@ microsoft-vs-code/
 
 ## 🧩 VS Code 扩展
 
-`extension/` 子包会将游戏构建成独立品牌的 **Bug Barrage** Webview 扩展，不读取工作区文件，也不需要网络访问。按 `Ctrl+Alt+G`（macOS 为 `Cmd+Alt+G`）进入游戏，再按同一快捷键即可暂停并回到上一个编辑器；隐藏的 Webview 会保留，因此再次进入时会继续当前战局，而不是重新加载。
+`extension/` 子包会将游戏构建成 **巨硬大战代码**（英文名：**Macrohard vs Code**）Webview 扩展，不读取工作区文件，也不需要网络访问。按 `Ctrl+Alt+G`（macOS 为 `Cmd+Alt+G`）进入游戏，再按同一快捷键即可暂停并回到上一个编辑器；隐藏的 Webview 会保留，因此再次进入时会继续当前战局，而不是重新加载。
 
 ```bash
 # 安装扩展专用的构建与打包依赖
@@ -284,7 +284,7 @@ npm --prefix extension install
 # 单元测试、Webview 构建、扩展宿主类型检查/构建、打包清单检查
 npm run verify:extension
 
-# 生成 artifacts/bug-barrage-0.1.0.vsix
+# 生成 artifacts/macrohard-vs-code-0.1.0.vsix
 npm run package:extension
 ```
 

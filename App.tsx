@@ -126,6 +126,7 @@ export default function App({ embedded = false, onRequestReturn }: AppProps) {
 
   // Language: storing in state triggers re-render; module-level variable drives t()
   const [lang, setLangState] = useState<Lang>(() => getLang());
+  const embeddedBrandName = lang === 'zh' ? '巨硬大战代码' : 'MACROHARD VS CODE';
 
   const handleLangChange = (l: Lang) => {
     setLang(l);
@@ -865,7 +866,7 @@ export default function App({ embedded = false, onRequestReturn }: AppProps) {
             {embedded && (
               <div className="extension-game-toolbar pointer-events-none absolute left-3 right-3 top-3 z-[95] flex items-center justify-between gap-3">
                 <div className="rounded border border-[#454545] bg-[#181818]/90 px-3 py-2 text-[11px] text-gray-400 shadow-lg backdrop-blur-sm">
-                  <span className="mr-2 text-[#4ec9b0]">BUG BARRAGE</span>
+                  <span className="mr-2 text-[#4ec9b0]">{embeddedBrandName}</span>
                   <span className="hidden sm:inline">Ctrl+Alt+G</span>
                 </div>
                 <div className="pointer-events-auto flex gap-2">
@@ -910,7 +911,7 @@ export default function App({ embedded = false, onRequestReturn }: AppProps) {
                       <VscLogo className="h-16 w-16 md:h-24 md:w-24" />
                     )}
                  </div>
-                 <h1 className="mb-2 text-center font-sans text-2xl font-bold tracking-tight text-[#007acc] md:text-4xl">{embedded ? 'BUG BARRAGE' : t('appTitle')}</h1>
+                  <h1 className="mb-2 text-center font-sans text-2xl font-bold tracking-tight text-[#007acc] md:text-4xl">{embedded ? embeddedBrandName : t('appTitle')}</h1>
                  <p className="text-[#ce9178] mb-2 font-mono text-sm">{embedded ? 'Extension Preview 0.1.0' : t('appVersion')}</p>
 
                  {/* Language toggle on start screen */}
