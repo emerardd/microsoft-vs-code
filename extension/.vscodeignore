@@ -1,0 +1,8 @@
+src/**
+webview/**
+scripts/**
+node_modules/**
+dist/test/**
+tsconfig*.json
+package-lock.json
+*.vsix

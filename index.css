@@ -68,6 +68,18 @@ input:focus-visible {
   padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
 }
 
+.workbench-shell--embedded {
+  padding-bottom: 0;
+}
+
+body.vscode-webview {
+  background: var(--vscode-editor-background, #1e1e1e);
+}
+
+body.vscode-webview .start-overlay {
+  padding-top: 4.5rem;
+}
+
 .status-bar {
   height: calc(1.5rem + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);

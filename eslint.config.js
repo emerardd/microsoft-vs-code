@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**'],
+    ignores: ['**/dist/**', '**/node_modules/**', 'extension/media/**', 'artifacts/**'],
   },
   {
     files: ['**/*.{ts,tsx}'],
@@ -16,7 +16,11 @@ export default tseslint.config(
     ],
     languageOptions: {
       ecmaVersion: 2022,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.mocha,
+      },
     },
     plugins: {
       'react-hooks': reactHooks,

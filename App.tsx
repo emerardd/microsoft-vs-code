@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import GameEngine from './components/GameEngine';
 import { GameState, GameStats, SidebarView, UpgradeId, UpgradeOption } from './types';
 import { ENEMY_TYPES, COMBO_TIMER_MAX } from './constants';
-import { resumeAudio, setMuted, isMuted } from './utils/audio';
+import { resumeAudio, suspendAudio, setMuted, isMuted } from './utils/audio';
 import { getLang, setLang, t, tUpgrade, Lang } from './utils/i18n';
 import { createInitialGameStats } from './utils/gameState';
 import vscodeLogo from './vscode.png';
@@ -68,6 +68,11 @@ const VscLogo = ({ className }: { className?: string }) => (
     />
 );
 
+interface AppProps {
+  embedded?: boolean;
+  onRequestReturn?: () => void;
+}
+
 const FilesIcon      = () => <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
 const SearchIcon     = () => <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>;
 const GitIcon        = () => <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>;
@@ -92,7 +97,7 @@ const SettingsIcon = ({ active, onClick, title }: { active: boolean; onClick: ()
     </div>
 );
 
-export default function App() {
+export default function App({ embedded = false, onRequestReturn }: AppProps) {
   const [gameState, setGameState] = useState<GameState>(GameState.START);
   const [sidebarView, setSidebarView] = useState<SidebarView>('EXPLORER');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -126,6 +131,31 @@ export default function App() {
     setLang(l);
     setLangState(l);
   };
+
+  const pauseForHost = useCallback(() => {
+    setGameState(previous => (
+      previous === GameState.PLAYING ? GameState.PAUSED : previous
+    ));
+    void suspendAudio();
+  }, []);
+
+  useEffect(() => {
+    if (!embedded) return;
+
+    const handleHostMessage = (event: MessageEvent<{ type?: string }>) => {
+      if (event.data?.type === 'pause-before-hide') pauseForHost();
+    };
+    const pauseWhenHidden = () => {
+      if (document.visibilityState === 'hidden') pauseForHost();
+    };
+
+    window.addEventListener('message', handleHostMessage);
+    document.addEventListener('visibilitychange', pauseWhenHidden);
+    return () => {
+      window.removeEventListener('message', handleHostMessage);
+      document.removeEventListener('visibilitychange', pauseWhenHidden);
+    };
+  }, [embedded, pauseForHost]);
 
   // Persist high score when game ends
   useEffect(() => {
@@ -167,6 +197,11 @@ export default function App() {
     const next = !soundMuted;
     setSoundMuted(next);
     setMuted(next);
+  };
+
+  const handleReturnToCode = () => {
+    pauseForHost();
+    onRequestReturn?.();
   };
 
   const handleSelectUpgrade = (id: UpgradeId) => {
@@ -671,8 +706,9 @@ export default function App() {
   };
 
   return (
-    <div className="workbench-shell relative flex w-screen select-none overflow-hidden font-mono text-[#cccccc]">
+    <div className={`workbench-shell relative flex w-screen select-none overflow-hidden font-mono text-[#cccccc] ${embedded ? 'workbench-shell--embedded' : ''}`}>
       {/* Activity Bar (Left) */}
+      {!embedded && (
       <div className="activity-bar z-[80] hidden w-12 shrink-0 flex-col items-center border-r border-[#252526] bg-[#333333] py-2 md:z-10 md:flex md:w-14">
         <VscLogo className="mb-6 mt-2 h-9 w-9 md:h-10 md:w-10" />
         <SidebarIcon active={sidebarView === 'EXPLORER'} onClick={() => handleSidebarSelect('EXPLORER')} title={t('ttExplorer')}>
@@ -692,9 +728,10 @@ export default function App() {
         </SidebarIcon>
         <SettingsIcon active={sidebarView === 'SETTINGS'} onClick={() => handleSidebarSelect('SETTINGS')} title={t('ttSettings')} />
       </div>
+      )}
 
       {/* Sidebar */}
-      {sidebarVisible && (
+      {!embedded && sidebarVisible && (
       <div className="desktop-sidebar relative hidden w-64 shrink-0 flex-col border-r border-[#1e1e1e] bg-[#252526] md:flex">
         <div className="flex items-center justify-between px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-500">
             <span>{sidebarView}</span>
@@ -737,7 +774,7 @@ export default function App() {
       )}
 
       {/* Small-screen sidebar drawer */}
-      {mobileSidebarOpen && (
+      {!embedded && mobileSidebarOpen && (
         <>
           <button
             type="button"
@@ -767,6 +804,7 @@ export default function App() {
       {/* Main Editor Area */}
       <div className="flex-1 flex flex-col bg-[#1e1e1e] relative min-w-0">
         {/* Tabs */}
+        {!embedded && (
         <div className="h-9 bg-[#252526] flex items-center overflow-x-auto border-b border-[#1e1e1e] shrink-0">
           <button
             type="button"
@@ -809,18 +847,47 @@ export default function App() {
             );
           })}
         </div>
+        )}
 
         {/* Breadcrumbs */}
+        {!embedded && (
         <div className="editor-breadcrumbs hidden h-6 shrink-0 items-center border-b border-[#1e1e1e] bg-[#1e1e1e] px-4 text-xs text-gray-500 sm:flex">
           {activeDocument === 'GAME' && <>src &gt; components &gt; game &gt; <span className="ml-1 flex items-center text-[#dcdcaa]"><span className="mr-1 text-purple-400">def</span> render()</span></>}
           {activeDocument === 'ENEMIES' && <>src &gt; data &gt; <span className="ml-1 text-[#e06c75]">enemies.json</span></>}
           {activeDocument === 'METADATA' && <>project &gt; <span className="ml-1 text-[#e06c75]">metadata.json</span></>}
           {activeDocument === null && <span>{t('noOpenEditors')}</span>}
         </div>
+        )}
 
         {/* Game Canvas Container */}
         <div className="relative min-h-0 flex-1 overflow-hidden bg-[#1e1e1e]">
           <div className={`absolute inset-0 items-center justify-center ${activeDocument === 'GAME' ? 'flex' : 'hidden'}`}>
+            {embedded && (
+              <div className="extension-game-toolbar pointer-events-none absolute left-3 right-3 top-3 z-[95] flex items-center justify-between gap-3">
+                <div className="rounded border border-[#454545] bg-[#181818]/90 px-3 py-2 text-[11px] text-gray-400 shadow-lg backdrop-blur-sm">
+                  <span className="mr-2 text-[#4ec9b0]">BUG BARRAGE</span>
+                  <span className="hidden sm:inline">Ctrl+Alt+G</span>
+                </div>
+                <div className="pointer-events-auto flex gap-2">
+                  <button
+                    type="button"
+                    className="rounded border border-[#454545] bg-[#252526]/95 px-3 py-2 text-xs text-gray-200 shadow-lg hover:border-[#9cdcfe] hover:text-white"
+                    onClick={handleSoundToggle}
+                    title={soundMuted ? t('statusUnmute') : t('statusMute')}
+                    aria-label={soundMuted ? t('statusUnmute') : t('statusMute')}
+                  >
+                    {soundMuted ? '🔇' : '🔔'}
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded border border-[#007acc] bg-[#0e639c]/95 px-3 py-2 text-xs font-semibold text-white shadow-lg hover:bg-[#1177bb]"
+                    onClick={handleReturnToCode}
+                  >
+                    ← Code
+                  </button>
+                </div>
+              </div>
+            )}
             <GameEngine
               gameState={gameState}
               setGameState={setGameState}
@@ -835,10 +902,16 @@ export default function App() {
             {gameState === GameState.START && (
               <div className="start-overlay absolute inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-[#1e1e1e]/95 px-4 py-5 sm:justify-center">
                  <div className="mb-2 transform transition-transform duration-500 hover:scale-110 md:mb-8">
-                    <VscLogo className="h-16 w-16 md:h-24 md:w-24" />
+                    {embedded ? (
+                      <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-[#4ec9b0] bg-[#12332f] font-mono text-xl font-black text-[#4ec9b0] shadow-lg shadow-[#4ec9b0]/10 md:h-24 md:w-24 md:text-3xl">
+                        {'</>'}
+                      </div>
+                    ) : (
+                      <VscLogo className="h-16 w-16 md:h-24 md:w-24" />
+                    )}
                  </div>
-                 <h1 className="mb-2 text-center font-sans text-2xl font-bold tracking-tight text-[#007acc] md:text-4xl">{t('appTitle')}</h1>
-                 <p className="text-[#ce9178] mb-2 font-mono text-sm">{t('appVersion')}</p>
+                 <h1 className="mb-2 text-center font-sans text-2xl font-bold tracking-tight text-[#007acc] md:text-4xl">{embedded ? 'BUG BARRAGE' : t('appTitle')}</h1>
+                 <p className="text-[#ce9178] mb-2 font-mono text-sm">{embedded ? 'Extension Preview 0.1.0' : t('appVersion')}</p>
 
                  {/* Language toggle on start screen */}
                  <div className="flex gap-2 mb-4">
@@ -971,6 +1044,7 @@ export default function App() {
         </div>
 
         {/* Terminal / Bottom Panel */}
+        {!embedded && (
         <div className="bottom-panel hidden h-40 shrink-0 flex-col border-t border-[#414141] bg-[#1e1e1e] md:flex">
           <div className="flex text-xs px-4 py-2 border-b border-[#414141] bg-[#1e1e1e]">
             {([
@@ -998,9 +1072,10 @@ export default function App() {
              {renderBottomPanelContent()}
           </div>
         </div>
+        )}
       </div>
 
-      {workbenchNotice && (
+      {!embedded && workbenchNotice && (
         <div
           className="absolute bottom-9 right-3 z-[90] w-[min(22rem,calc(100vw-4rem))] border border-[#007acc] bg-[#252526] p-3 text-xs text-gray-200 shadow-2xl"
           role="status"
@@ -1023,6 +1098,7 @@ export default function App() {
       )}
 
       {/* Status Bar */}
+      {!embedded && (
       <div className="status-bar absolute bottom-0 left-0 right-0 bg-[#007acc] text-white flex items-center text-xs px-2 sm:px-3 justify-between z-50 cursor-default">
         <div className="flex items-center gap-2 sm:gap-4">
           <button type="button" className="flex items-center rounded px-1 hover:bg-white/20" title={t('statusErrors')} onClick={() => openBottomPanel('PROBLEMS')}><span className="mr-1">⊗</span> 0</button>
@@ -1067,6 +1143,7 @@ export default function App() {
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 }

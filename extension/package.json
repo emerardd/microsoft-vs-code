@@ -1,0 +1,68 @@
+{
+  "name": "bug-barrage",
+  "displayName": "Bug Barrage",
+  "description": "A one-key arcade break game for Visual Studio Code.",
+  "version": "0.1.0",
+  "publisher": "emerardd",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emerardd/microsoft-vs-code.git"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Other"],
+  "keywords": ["game", "arcade", "break", "developer", "canvas"],
+  "extensionKind": ["ui"],
+  "main": "./dist/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": {
+      "supported": true
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "bugBarrage.toggleGame",
+        "title": "Toggle Game",
+        "category": "Bug Barrage",
+        "icon": "$(game)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "bugBarrage.toggleGame",
+        "key": "ctrl+alt+g",
+        "mac": "cmd+alt+g"
+      }
+    ]
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "check-test-types": "tsc --noEmit -p tsconfig.test.json",
+    "build:host": "esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.js",
+    "build:tests": "npm run check-test-types && esbuild src/test/runTest.ts src/test/suite/index.ts src/test/suite/extension.test.ts --bundle --platform=node --format=cjs --external:vscode --external:mocha --outdir=dist/test --outbase=src/test",
+    "build": "npm run check-types && npm run build:host",
+    "test:integration": "npm --prefix .. run build:extension-webview && npm run build && npm run build:tests && node dist/test/runTest.js",
+    "check-package": "vsce ls --no-dependencies",
+    "package": "node scripts/package-extension.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/mocha": "^10.0.10",
+    "@types/vscode": "^1.90.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.2",
+    "esbuild": "^0.25.0",
+    "mocha": "^11.7.1",
+    "typescript": "~5.8.2"
+  },
+  "overrides": {
+    "diff": "8.0.3",
+    "serialize-javascript": "7.0.5"
+  }
+}

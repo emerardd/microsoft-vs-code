@@ -23,6 +23,13 @@ export function resumeAudio(): void {
   getCtx();
 }
 
+/** Suspend the shared audio context while the game is hidden in an editor tab. */
+export async function suspendAudio(): Promise<void> {
+  if (ctx?.state === 'running') {
+    await ctx.suspend();
+  }
+}
+
 export function setMuted(value: boolean): void {
   muted = value;
 }

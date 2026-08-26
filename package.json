@@ -12,7 +12,12 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
+    "test:extension-unit": "vitest run extension/src",
     "verify": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "build:extension-webview": "vite build --config vite.config.extension.ts",
+    "build:extension": "npm run build:extension-webview && npm --prefix extension run build",
+    "verify:extension": "npm run test:extension-unit && npm run build:extension && npm --prefix extension run check-package",
+    "package:extension": "npm run verify:extension && npm --prefix extension run package",
     "preview": "vite preview",
     "predeploy": "npm run verify",
     "deploy": "gh-pages -d dist"
