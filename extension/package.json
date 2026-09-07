@@ -12,6 +12,7 @@
   "engines": {
     "vscode": "^1.90.0"
   },
+  "icon": "images/icon.png",
   "categories": ["Other"],
   "keywords": ["game", "arcade", "break", "developer", "canvas"],
   "extensionKind": ["ui"],
