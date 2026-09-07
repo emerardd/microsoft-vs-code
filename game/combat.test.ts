@@ -191,4 +191,23 @@ describe('combat resolution', () => {
     expect(context.player.hp).toBe(80);
     expect(result.powerUps).toHaveLength(0);
   });
+
+  it('spends a projectile on the first enemy it overlaps', () => {
+    const context = createContext();
+    context.player.x = 500;
+    context.player.y = 500;
+    context.enemies = [
+      createEnemy({ id: 'front', hp: 100, maxHp: 100 }),
+      createEnemy({ id: 'behind', hp: 100, maxHp: 100 }),
+    ];
+    context.projectiles = [createProjectile({ damage: 10 })];
+
+    const result = resolveCombat(context);
+
+    expect(result.enemies[0].hp).toBe(90);
+    expect(result.enemies[1].hp).toBe(100);
+    expect(result.enemies[1].flashTimer).toBe(0);
+    expect(context.createExplosion).toHaveBeenCalledOnce();
+    expect(context.handleEnemyDefeat).toHaveBeenCalledOnce();
+  });
 });

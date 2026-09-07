@@ -187,8 +187,17 @@ function renderRefactorHud(
   ctx.restore();
 }
 
-export function renderPausedFrame(ctx: CanvasRenderingContext2D, showPauseMessage: boolean): void {
+export function renderPausedFrame(
+  ctx: CanvasRenderingContext2D,
+  showPauseMessage: boolean,
+  frozenFrame: CanvasImageSource | null = null,
+): void {
   ctx.save();
+  // Repaint the frozen frame first. Without it the dim layer below is stacked on
+  // top of the previous paused frame every tick, which faded the scene to black.
+  if (frozenFrame) {
+    ctx.drawImage(frozenFrame, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  }
   ctx.fillStyle = 'rgba(0,0,0,0.55)';
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 

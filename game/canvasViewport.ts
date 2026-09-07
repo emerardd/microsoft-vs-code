@@ -57,6 +57,28 @@ export function resizeCanvasToDisplaySize(
   return changed;
 }
 
+/**
+ * Copy the current canvas pixels into a detached buffer, so a frame can be
+ * frozen and repainted later. Returns null when there is nothing to copy or the
+ * host has no DOM (unit tests).
+ */
+export function captureCanvasSnapshot(
+  canvas: HTMLCanvasElement,
+): HTMLCanvasElement | null {
+  if (typeof document === 'undefined') return null;
+  if (canvas.width === 0 || canvas.height === 0) return null;
+
+  const snapshot = document.createElement('canvas');
+  snapshot.width = canvas.width;
+  snapshot.height = canvas.height;
+
+  const snapshotCtx = snapshot.getContext('2d');
+  if (!snapshotCtx) return null;
+
+  snapshotCtx.drawImage(canvas, 0, 0);
+  return snapshot;
+}
+
 export function prepareGameContext(
   canvas: HTMLCanvasElement,
 ): CanvasRenderingContext2D | null {

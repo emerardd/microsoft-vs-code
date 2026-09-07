@@ -30,6 +30,7 @@ import { resolveEnemyDefeat } from '../game/progression';
 import { activateRefactorUltimate } from '../game/refactorUltimate';
 import { getAmbientSpawnPlan } from '../game/spawnDirector';
 import {
+  captureCanvasSnapshot,
   prepareGameContext,
   resizeCanvasToDisplaySize,
 } from '../game/canvasViewport';
@@ -72,6 +73,8 @@ const GameEngine: React.FC<GameEngineProps> = ({
   const powerUpsRef = useRef<PowerUp[]>([]);
   const floatingTextsRef = useRef<FloatingText[]>([]);
   const bgParticlesRef = useRef<BackgroundParticle[]>([]);
+  // Last active frame, kept while paused so the dim overlay has a stable source.
+  const frozenFrameRef = useRef<HTMLCanvasElement | null>(null);
   const keysRef = useRef<Set<string>>(new Set());
   const shakeRef = useRef<number>(0);
 
@@ -212,6 +215,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
     powerUpsRef.current = [];
     floatingTextsRef.current = [];
     shakeRef.current = 0;
+    frozenFrameRef.current = null;
     keysRef.current.clear();
     statsRef.current = createInitialGameStats(t('logNewSession'));
     lastFireTimeRef.current = 0;
@@ -266,10 +270,22 @@ const GameEngine: React.FC<GameEngineProps> = ({
         // doesn't inherit a large deltaTime spike from the idle period.
         lastTimeRef.current = timestamp;
 
-        renderPausedFrame(ctx, gameState === GameState.PAUSED);
+        // Freeze the last active frame once, then repaint it every tick. The
+        // overlay used to be stacked onto the live canvas, so its alpha
+        // accumulated and the paused scene faded to black within a second.
+        if (!frozenFrameRef.current) {
+          frozenFrameRef.current = captureCanvasSnapshot(canvas);
+        }
+        renderPausedFrame(
+          ctx,
+          gameState === GameState.PAUSED,
+          frozenFrameRef.current,
+        );
         frameIdRef.current = requestAnimationFrame(gameLoop);
         return;
     }
+
+    frozenFrameRef.current = null;
 
     if (gameState !== GameState.PLAYING) {
         if (gameState === GameState.START) {

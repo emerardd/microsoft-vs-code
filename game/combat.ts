@@ -134,8 +134,11 @@ export function resolveCombat({
   projectiles.forEach((projectile) => {
     if (projectile.damage <= 0) return;
 
-    enemies.forEach((enemy) => {
-      if (enemy.hp <= 0 || !intersects(projectile, enemy)) return;
+    // A projectile is spent on the first enemy it touches. `some` stops the scan
+    // there, so enemies overlapping the same point no longer take phantom hits
+    // (white flash, particles and a hit sound for zero damage).
+    enemies.some((enemy) => {
+      if (enemy.hp <= 0 || !intersects(projectile, enemy)) return false;
 
       const damage = Math.min(
         enemy.hp,
@@ -152,6 +155,7 @@ export function resolveCombat({
       createExplosion(projectile.x, projectile.y, COLORS.text, 1);
       sfxHit();
       handleEnemyDefeat(enemy);
+      return true;
     });
   });
 
