@@ -115,6 +115,8 @@ test('full five-wave run wins once, persists unlocks, and starts with the chosen
   test.setTimeout(120000);
   await page.goto('/e2e/harness.html?campaign');
   await page.getByRole('button', { name: 'Continue run' }).click();
+  await expect(page.getByTestId('run-stage')).toHaveText('Wave 1/5');
+  await page.locator('canvas').focus();
   await page.clock.install();
   let upgrades = 0;
   await page.keyboard.down('Space');
@@ -124,6 +126,11 @@ test('full five-wave run wins once, persists unlocks, and starts with the chosen
       upgrades++;
       await page.keyboard.up('Space');
       await page.getByTestId('upgrade-choice').first().click();
+      // Wait for React to consume the choice before advancing the mocked clock.
+      // Otherwise CI can count the outgoing overlay as the next wave's choice.
+      await expect(page.getByTestId('upgrade-choice')).toHaveCount(0);
+      await expect(page.getByTestId('run-stage')).toHaveText(`Wave ${upgrades + 1}/5`);
+      await page.locator('canvas').focus();
       await page.keyboard.down('a');
       await page.clock.runFor(67);
       await page.keyboard.up('a');
@@ -144,6 +151,8 @@ test('full five-wave run wins once, persists unlocks, and starts with the chosen
   await page.getByRole('radio', { name: /Piercing/ }).check();
   await page.getByRole('button', { name: 'F5 Start Debugging' }).click();
   await page.getByTestId('upgrade-choice').filter({ hasText: /Fast GC|Overclock|Buffer Overflow|Reflect API|Buffer pressure/ }).first().click();
+  await expect(page.getByTestId('upgrade-choice')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('test-webview-state') ?? '{}').checkpoint?.player.pierceLevel)).toBe(1);
   const player = await page.evaluate(() => JSON.parse(localStorage.getItem('test-webview-state') ?? '{}').checkpoint.player);
   expect(player.weaponLevel).toBe(1);
   expect(player.pierceLevel).toBe(1);
