@@ -8,7 +8,6 @@ import type {
   Projectile,
 } from '../types';
 import { sfxHeal, sfxHit, sfxPlayerHit, sfxPowerUp } from '../utils/audio';
-import { applyDamage } from '../utils/gameLogic';
 import { t } from '../utils/i18n';
 import { intersects } from './collision';
 import { addBossDamageCombo, getComboBonuses, penalizeCombo } from './combo';
@@ -77,31 +76,15 @@ export function resolveCombat({
   let shake = 0;
 
   enemies.forEach((enemy) => {
-    enemy.shieldContactTimer = Math.max(0, (enemy.shieldContactTimer ?? 0) - frameScale);
     if (player.hp <= 0 || enemy.hp <= 0 || !intersects(player, enemy)) return;
 
-    if (player.shield > 0) {
-      if (enemy.shieldContactTimer > 0) return;
-      enemy.shieldContactTimer = 6;
-      const damage = Math.min(enemy.hp, 60);
-      enemy.hp = applyDamage(enemy.hp, damage);
-      showBossComboGain(
-        enemy,
-        addBossDamageCombo(enemy, stats, damage),
-        addFloatingText,
-      );
-      createExplosion(enemy.x, enemy.y, '#0db7ed', 5);
-      addFloatingText(player.x, player.y - 20, t('blocked'), '#0db7ed');
-      handleEnemyDefeat(enemy);
-      return;
-    }
+    if (player.shield > 0) return;
 
     if (player.invulnerable > 0) return;
 
     recordDamage(stats, enemy.type, Math.min(player.hp, 20));
     player.hp -= 20;
     player.invulnerable = 60;
-    player.weaponLevel = Math.max(1, player.weaponLevel - 1);
     penalizeCombo(stats);
     createExplosion(player.x, player.y, COLORS.error, 15);
     shake = 15;
@@ -112,7 +95,7 @@ export function resolveCombat({
   });
 
   enemyProjectiles.forEach((projectile) => {
-    if (player.hp <= 0 || player.invulnerable > 0 || !intersects(player, projectile)) return;
+    if (player.hp <= 0 || (player.invulnerable > 0 && player.shield <= 0) || !intersects(player, projectile)) return;
 
     if (player.shield > 0) {
       addFloatingText(player.x, player.y - 20, t('blocked'), '#0db7ed');

@@ -10,7 +10,8 @@ import { renderPausedFrame, renderScene, renderStartFrame } from '../game/render
 import type { BackgroundParticle } from '../game/renderScene';
 import { setControlPressed, useGameInput } from '../game/useGameInput';
 import { updateEnemy } from '../game/updateEnemy';
-import type { EnemySpawnType } from '../game/contentSelection';
+import { pickUpgradeChoices, type EnemySpawnType } from '../game/contentSelection';
+import { completeWave, getExcludedUpgrades } from '../game/runPlan';
 import {
   createBoss,
   createEnemy,
@@ -36,9 +37,12 @@ import {
 } from '../game/canvasViewport';
 import { SimulationClock } from '../game/simulationClock';
 import { createCheckpoint, type Checkpoint } from '../game/checkpoint';
+import { applyLoadout, type Loadout, type MetaProfile } from '../game/metaProgression';
 import TouchControls, { TouchControlCode } from './TouchControls';
 
 interface GameEngineProps {
+  profile: MetaProfile;
+  loadout: Loadout;
   active: boolean;
   language: string;
   checkpoint?: Checkpoint | null;
@@ -54,7 +58,7 @@ interface GameEngineProps {
 }
 
 const GameEngine: React.FC<GameEngineProps> = ({
-  active, language, checkpoint, onCheckpoint,
+  active, language, checkpoint, onCheckpoint, profile, loadout,
   gameState,
   setGameState,
   onStatsUpdate,
@@ -114,6 +118,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
   }, [onStatsUpdate]);
 
   const triggerGameOver = useCallback(() => {
+    statsRef.current.outcome = 'defeat';
     phaseRef.current = GameState.GAME_OVER;
     onCheckpoint?.(null);
     syncStatsToUI();
@@ -158,6 +163,10 @@ const GameEngine: React.FC<GameEngineProps> = ({
     playerRef.current.reloadTimer = 0;
     lastSpawnTimeRef.current = clockRef.current.time;
     lastFireTimeRef.current = clockRef.current.time;
+    playerRef.current.fireCadenceRemainderMs = 0;
+    playerRef.current.wasFiring = false;
+    phaseRef.current = GameState.PLAYING;
+    keysRef.current.clear();
     onCheckpoint?.(createCheckpoint(playerRef.current, statsRef.current, modifiers));
     syncStatsToUI();
     onUpgradeConsumed();
@@ -190,14 +199,6 @@ const GameEngine: React.FC<GameEngineProps> = ({
         spawnEnemy,
         createExplosion,
         addFloatingText,
-        excludedUpgrades: [
-          ...((playerRef.current.pierceLevel ?? 0) >= 2 ? ['PIERCE' as const] : []),
-          ...((playerRef.current.ricochetLevel ?? 0) >= 2 ? ['RICOCHET' as const] : []),
-          ...((playerRef.current.lastStandLevel ?? 0) >= 2 ? ['LAST_STAND' as const] : []),
-          ...(playerRef.current.weaponLevel >= 5 ? ['WEAPON' as const] : []),
-          ...(fastGcLevelRef.current >= 3 ? ['RELOAD' as const] : []),
-          ...(overclockLevelRef.current >= 3 ? ['OVERCLOCK' as const] : []),
-        ],
         grantSpecialCharge,
       });
       if (!result.defeated) return;
@@ -210,6 +211,12 @@ const GameEngine: React.FC<GameEngineProps> = ({
       }
       if (result.shake > 0) {
           shakeRef.current = result.shake;
+      }
+      if (result.victory) {
+          phaseRef.current = GameState.VICTORY;
+          onCheckpoint?.(null);
+          syncStatsToUI();
+          setGameState(GameState.VICTORY);
       }
       if (result.upgradeChoices.length > 0) {
           statsRef.current.pendingUpgrades = result.upgradeChoices;
@@ -242,6 +249,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
     fastGcLevelRef.current = 0;
 
     playerRef.current = createInitialPlayer();
+    applyLoadout(playerRef.current, profile, loadout);
     projectilesRef.current = [];
     enemyProjectilesRef.current = [];
     enemiesRef.current = [];
@@ -252,13 +260,15 @@ const GameEngine: React.FC<GameEngineProps> = ({
     frozenFrameRef.current = null;
     keysRef.current.clear();
     statsRef.current = createInitialGameStats(t('logNewSession'));
+    statsRef.current.pendingUpgrades = pickUpgradeChoices(3, Math.random, getExcludedUpgrades(playerRef.current, { fastGcLevel: 0, overclockLevel: 0 }));
+    phaseRef.current = GameState.UPGRADE;
     lastFireTimeRef.current = 0;
     clockRef.current.reset();
     lastSpawnTimeRef.current = 0;
     lastTimeRef.current = 0;
     lastStatsSyncTimeRef.current = 0;
     syncStatsToUI();
-  }, [syncStatsToUI]);
+  }, [syncStatsToUI, profile, loadout]);
 
   useEffect(() => {
     if (active && (gameState === GameState.PLAYING || gameState === GameState.PAUSED)) {
@@ -382,10 +392,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
 
     if (phaseRef.current !== GameState.PLAYING) return false;
 
-    // 5. Boss / Enemy spawning
-    if (!statsRef.current.bossActive && statsRef.current.levelProgress >= statsRef.current.levelTarget) {
-        spawnBoss();
-    }
+    // 5. Enemy spawning; wave completion is resolved after combat.
 
     const spawnPlan = getAmbientSpawnPlan(statsRef.current.wave);
     const activeMinionCount = enemiesRef.current.filter(
@@ -433,6 +440,25 @@ const GameEngine: React.FC<GameEngineProps> = ({
     projectilesRef.current = combatResult.projectiles;
     powerUpsRef.current = combatResult.powerUps;
     if (combatResult.shake > 0) shakeRef.current = combatResult.shake;
+
+    if (phaseRef.current === GameState.PLAYING) {
+      const transition = completeWave(player, statsRef.current);
+      if (transition === 'upgrade') {
+        statsRef.current.lastLog = t('waveDeployed', { wave: statsRef.current.wave - 1 });
+        statsRef.current.pendingUpgrades = pickUpgradeChoices(3, Math.random, getExcludedUpgrades(player, {
+          fastGcLevel: fastGcLevelRef.current, overclockLevel: overclockLevelRef.current,
+        }));
+        keysRef.current.clear();
+        phaseRef.current = GameState.UPGRADE;
+        syncStatsToUI();
+        setGameState(GameState.UPGRADE);
+      } else if (transition === 'boss') {
+        enemiesRef.current = [];
+        enemyProjectilesRef.current = [];
+        projectilesRef.current = [];
+        spawnBoss();
+      }
+    }
 
     particlesRef.current = advanceParticles(particlesRef.current, frameScale);
     floatingTextsRef.current = advanceFloatingTexts(floatingTextsRef.current, frameScale);
@@ -515,6 +541,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
 
   return (
     <div className={`game-shell ${gameState === GameState.PLAYING || gameState === GameState.PAUSED ? 'game-shell--active' : ''}`}>
+      {(gameState === GameState.PLAYING || gameState === GameState.PAUSED) && <div className="absolute top-1 left-1/2 z-10 -translate-x-1/2 bg-[#252526]/90 px-3 py-1 text-xs text-[#dcdcaa]" data-testid="run-stage">{statsRef.current.bossActive ? t('finalBossStage') : t('runStage', { wave: statsRef.current.wave })}</div>}
       <div className="game-canvas-stage">
         <canvas
           ref={canvasRef}

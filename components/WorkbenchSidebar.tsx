@@ -1,4 +1,4 @@
-import { ENEMY_TYPES, COMBO_TIMER_MAX } from '../constants';
+import { ENEMY_TYPES, COMBO_TIMER_MAX, MAX_RICOCHET_LEVEL } from '../constants';
 import { t, tUpgrade, type Lang } from '../utils/i18n';
 import type { SidebarView } from '../types';
 import { useGameStats, type StatsStore } from '../game/statsStore';
@@ -149,7 +149,7 @@ export default function WorkbenchSidebar({store, sidebarView, explorerOpen, setE
           <div className="text-xs font-bold uppercase text-gray-500 mb-4">{t('installedExt')}</div>
           {stats.upgradeHistory.length > 0 && <div className="mb-4 border-l-2 border-[#4ec9b0] pl-3 text-xs">
             <div className="mb-2 text-gray-400">{t('upgradeRoute')}</div>
-            {[...new Set(stats.upgradeHistory)].map(id => <div key={id} className="mb-1 text-[#dcdcaa]">{tUpgrade(id, 'title')} ×{stats.upgradeHistory.filter(selected => selected === id).length}</div>)}
+            {[...new Set(stats.upgradeHistory)].map(id => <div key={id} className="mb-1 text-[#dcdcaa]">{tUpgrade(id, 'title')} ×{Math.min(id === 'RICOCHET' ? MAX_RICOCHET_LEVEL : Infinity, stats.upgradeHistory.filter(selected => selected === id).length)}</div>)}
           </div>}
           <div className="space-y-3">
              <div className="flex items-start p-2 bg-[#333] rounded hover:bg-[#3c3c3c]">

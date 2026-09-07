@@ -1,3 +1,4 @@
+import { creditRun, emptyProfile, parseProfile, readProfile, writeProfile, type Loadout, type MetaProfile } from './game/metaProgression';
 import vscodeLogo from './vscode.png';
 import StatusBar from './components/StatusBar';
 
@@ -65,6 +66,8 @@ const SidebarIcon = ({ active, onClick, children, title }: IconProps & { childre
 );
 
 interface AppProps {
+  initialProfile?: unknown;
+  onProfileChange?: (profile: MetaProfile) => void | Promise<void>;
   embedded?: boolean;
   onRequestReturn?: () => void;
   initialCheckpoint?: unknown;
@@ -95,7 +98,11 @@ const SettingsIcon = ({ active, onClick, title }: { active: boolean; onClick: ()
     </div>
 );
 
-export default function App({ embedded = false, onRequestReturn, initialCheckpoint, onCheckpoint }: AppProps) {
+export default function App({ embedded = false, onRequestReturn, initialCheckpoint, onCheckpoint, initialProfile, onProfileChange }: AppProps) {
+  const [profile, setProfile] = useState(() => embedded ? parseProfile(initialProfile) ?? emptyProfile() : readProfile());
+  const profileRef = useRef(profile);
+  const [loadout, setLoadout] = useState<Loadout>('standard');
+  const [profileSaveFailed, setProfileSaveFailed] = useState(false);
   const [checkpoint, setCheckpoint] = useState(() => parseCheckpoint(initialCheckpoint));
   const [gameState, setGameState] = useState<GameState>(checkpoint ? GameState.PAUSED : GameState.START);
   const [statsStore] = useState(createStatsStore);
@@ -117,8 +124,17 @@ export default function App({ embedded = false, onRequestReturn, initialCheckpoi
 
   const handleStatsUpdate = useCallback((next: GameStats) => {
     statsStore.publish(next);
+    const updated = creditRun(profileRef.current, next);
+    if (updated !== profileRef.current) {
+      profileRef.current = updated;
+      setProfile(updated);
+      try {
+        const saved = onProfileChange ? onProfileChange(updated) : writeProfile(updated);
+        void Promise.resolve(saved).then(() => setProfileSaveFailed(false), () => setProfileSaveFailed(true));
+      } catch { setProfileSaveFailed(true); }
+    }
     if (next.lastLog) setTerminalLogs(previous => previous[previous.length - 1] === next.lastLog ? previous : [...previous.slice(-5), next.lastLog]);
-  }, [statsStore]);
+  }, [statsStore, onProfileChange]);
 
   // High score
   const [highScore, setHighScore] = useState<number>(readHighScore);
@@ -170,7 +186,7 @@ export default function App({ embedded = false, onRequestReturn, initialCheckpoi
 
   // Persist high score when game ends
   useEffect(() => {
-    if (gameState === GameState.GAME_OVER) {
+    if (gameState === GameState.GAME_OVER || gameState === GameState.VICTORY) {
       const previous = readHighScore();
       const isRecord = stats.score > previous;
       setNewRecord(isRecord);
@@ -196,7 +212,8 @@ export default function App({ embedded = false, onRequestReturn, initialCheckpoi
     setActiveDocument('GAME');
     setMobileSidebarOpen(false);
     setRestartToken(prev => prev + 1);
-    setGameState(GameState.PLAYING);
+    setPendingUpgrade(null);
+    setGameState(GameState.UPGRADE);
     setTerminalLogs([t('termLog1'), t('termLog2'), t('termLog3'), t('termLog4')]);
   };
 
@@ -463,6 +480,8 @@ export default function App({ embedded = false, onRequestReturn, initialCheckpoi
               setGameState={setGameState}
               active={activeDocument === 'GAME'}
               language={lang}
+              profile={profile}
+              loadout={loadout}
               checkpoint={checkpoint}
               onCheckpoint={saveCheckpoint}
               onStatsUpdate={handleStatsUpdate}
@@ -476,7 +495,7 @@ export default function App({ embedded = false, onRequestReturn, initialCheckpoi
               <p className="mb-3">{t('checkpointRestored', { wave: checkpoint.stats.wave })}</p>
               <button className="bg-[#0e639c] px-4 py-2 text-white" onClick={() => { setCheckpoint(null); resumeAudio(); setGameState(GameState.PLAYING); }}>{t('continueRun')}</button>
             </div>}
-            <GameOverlays lang={lang} handleLangChange={handleLangChange} gameState={gameState} stats={stats} embedded={embedded} embeddedBrandName={embeddedBrandName} highScore={highScore} newRecord={newRecord} movementSensitivity={movementSensitivity} startFreshRun={startFreshRun} handleSelectUpgrade={handleSelectUpgrade} />
+            <GameOverlays profile={profile} loadout={loadout} onLoadoutChange={setLoadout} profileSaveFailed={profileSaveFailed} lang={lang} handleLangChange={handleLangChange} gameState={gameState} stats={stats} embedded={embedded} embeddedBrandName={embeddedBrandName} highScore={highScore} newRecord={newRecord} movementSensitivity={movementSensitivity} startFreshRun={startFreshRun} handleSelectUpgrade={handleSelectUpgrade} />
           </div>
           {activeDocument !== 'GAME' && <EditorDocumentView store={statsStore} activeDocument={activeDocument} highScore={highScore} openDocument={openDocument} handleSidebarSelect={handleSidebarSelect} />}
         </div>

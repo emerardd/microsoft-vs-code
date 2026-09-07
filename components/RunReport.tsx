@@ -7,8 +7,9 @@ export default function RunReport({ stats }: { stats: GameStats }) {
   return <section className="mt-4 border-t border-[#454545] pt-4 text-xs" aria-label={t('runReport')}>
     <h2 className="mb-3 text-sm font-semibold text-[#9cdcfe]">{t('runReport')}</h2>
     <dl className="grid grid-cols-2 gap-2">
-      <dt className="text-gray-400">{t('survivalTime')}</dt><dd>{Math.floor(stats.elapsedMs / 60000)}:{String(Math.floor(stats.elapsedMs / 1000) % 60).padStart(2, '0')}</dd>
-      <dt className="text-gray-400">{t('deathCause')}</dt><dd className="break-words text-[#f48771]">{sourceLabel(stats.deathCause) || '—'}</dd>
+      <dt className="text-gray-400">{t(stats.outcome === 'victory' ? 'victoryTime' : 'survivalTime')}</dt><dd>{Math.floor(stats.elapsedMs / 60000)}:{String(Math.floor(stats.elapsedMs / 1000) % 60).padStart(2, '0')}</dd>
+      {stats.outcome !== 'victory' && <><dt className="text-gray-400">{t('deathCause')}</dt><dd className="break-words text-[#f48771]">{sourceLabel(stats.deathCause) || '—'}</dd></>}
+      <dt className="text-gray-400">{t('wavesClearedLabel')}</dt><dd>{stats.wavesCleared}/5</dd>
       <dt className="text-gray-400">{t('mainDamage')}</dt><dd className="break-words">{damage.length ? `${sourceLabel(damage[0][0])} · ${Math.round(damage[0][1])} HP` : '—'}</dd>
     </dl>
     <h3 className="mb-2 mt-4 text-gray-400">{t('upgradeRoute')}</h3>

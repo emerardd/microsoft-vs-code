@@ -10,12 +10,10 @@ import type {
   GameStats,
   Player,
   PowerUp,
-  UpgradeId,
   UpgradeOption,
 } from '../types';
 import { sfxExplosion, sfxWaveClear } from '../utils/audio';
 import { t } from '../utils/i18n';
-import { pickUpgradeChoices } from './contentSelection';
 import { createPowerUpDrop } from './entityFactory';
 import type { EnemySpawnType } from './contentSelection';
 import { addComboStacks, getComboBonuses } from './combo';
@@ -40,12 +38,12 @@ interface EnemyDefeatContext {
     vy?: number,
   ) => void;
   random?: RandomSource;
-  excludedUpgrades?: readonly UpgradeId[];
   grantSpecialCharge?: boolean;
 }
 
 export interface EnemyDefeatResult {
   defeated: boolean;
+  victory: boolean;
   clearEnemyProjectiles: boolean;
   droppedPowerUp: PowerUp | null;
   shake: number;
@@ -54,6 +52,7 @@ export interface EnemyDefeatResult {
 
 const notDefeated = (): EnemyDefeatResult => ({
   defeated: false,
+  victory: false,
   clearEnemyProjectiles: false,
   droppedPowerUp: null,
   shake: 0,
@@ -69,7 +68,6 @@ export function resolveEnemyDefeat(
     createExplosion,
     addFloatingText,
     random = Math.random,
-    excludedUpgrades = [],
     grantSpecialCharge = true,
   }: EnemyDefeatContext,
 ): EnemyDefeatResult {
@@ -113,35 +111,29 @@ export function resolveEnemyDefeat(
 
   let clearEnemyProjectiles = false;
   let shake = 0;
-  let upgradeChoices: UpgradeOption[] = [];
+  const upgradeChoices: UpgradeOption[] = [];
 
   if (enemy.type === 'MONOLITH') {
     stats.bossActive = false;
-    player.maxHp += 5;
-    player.maxAmmo += 2;
-    player.damageMultiplier = Number((player.damageMultiplier + 0.04).toFixed(2));
-    stats.wave++;
-    stats.levelProgress = 0;
-    stats.levelTarget += 5;
-    stats.lastLog = t('logBossKilled', { wave: stats.wave - 1 });
+    stats.outcome = 'victory';
+    stats.deathCause = '';
+    stats.lastLog = t('runVictory');
     addFloatingText(
       PLAYFIELD_WIDTH / 2,
       CANVAS_HEIGHT / 2,
       t('deploySuccess'),
       COLORS.class,
     );
-    player.hp = player.maxHp;
-    player.ammo = player.maxAmmo;
     clearEnemyProjectiles = true;
     shake = 20;
     sfxWaveClear();
-    upgradeChoices = pickUpgradeChoices(3, random, excludedUpgrades);
   } else if (!stats.bossActive) {
-    stats.levelProgress++;
+    stats.levelProgress = Math.min(stats.levelTarget, stats.levelProgress + 1);
   }
 
   return {
     defeated: true,
+    victory: enemy.type === 'MONOLITH',
     clearEnemyProjectiles,
     droppedPowerUp: random() < 0.15
       ? createPowerUpDrop(enemy, random)

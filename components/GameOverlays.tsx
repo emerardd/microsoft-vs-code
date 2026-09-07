@@ -1,15 +1,18 @@
+import LoadoutSelection from './LoadoutSelection';
+import { emptyProfile, type MetaProfile, type Loadout } from '../game/metaProgression';
 import { GameState, type GameStats, type UpgradeId, type UpgradeOption } from '../types';
 import { t, tUpgrade, type Lang } from '../utils/i18n';
 import RunReport from './RunReport';
 import vscodeLogo from '../vscode.png';
-interface Props { lang: Lang; handleLangChange: (lang: Lang) => void; gameState: GameState; stats: GameStats; embedded: boolean; embeddedBrandName: string; highScore: number; newRecord: boolean; movementSensitivity: number; startFreshRun: () => void; handleSelectUpgrade: (id: UpgradeId) => void }
-export default function GameOverlays({lang, handleLangChange, gameState, stats, embedded, embeddedBrandName, highScore, newRecord, movementSensitivity, startFreshRun, handleSelectUpgrade}: Props) {
+interface Props { profile?: MetaProfile; loadout?: Loadout; onLoadoutChange?: (loadout: Loadout) => void; profileSaveFailed?: boolean; lang: Lang; handleLangChange: (lang: Lang) => void; gameState: GameState; stats: GameStats; embedded: boolean; embeddedBrandName: string; highScore: number; newRecord: boolean; movementSensitivity: number; startFreshRun: () => void; handleSelectUpgrade: (id: UpgradeId) => void }
+export default function GameOverlays({profile = emptyProfile(), loadout = 'standard', onLoadoutChange = () => {}, profileSaveFailed = false, lang, handleLangChange, gameState, stats, embedded, embeddedBrandName, highScore, newRecord, startFreshRun, handleSelectUpgrade}: Props) {
+ const won = gameState === GameState.VICTORY;
  const formatNumber = (value: number) => value.toLocaleString();
- const formatSensitivity = (value: number) => `${value.toFixed(2)}x`;
  return <>
+   {profileSaveFailed && <p role="alert" className="absolute bottom-2 left-2 right-2 z-[60] bg-[#5a3300] p-2 text-xs text-white">{t('profileSaveFailed')}</p>}
             {/* Start Screen Overlay */}
             {gameState === GameState.START && (
-              <div className="start-overlay absolute inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-[#1e1e1e]/95 px-4 py-5 sm:justify-center">
+              <div className="start-overlay absolute inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-[#1e1e1e]/95 px-4 py-5 ">
                  <div className="mb-2 transform transition-transform duration-500 hover:scale-110 md:mb-8">
                     {embedded ? (
                       <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-[#4ec9b0] bg-[#12332f] font-mono text-xl font-black text-[#4ec9b0] shadow-lg shadow-[#4ec9b0]/10 md:h-24 md:w-24 md:text-3xl">
@@ -52,24 +55,9 @@ export default function GameOverlays({lang, handleLangChange, gameState, stats, 
                     <span className="text-[#dcdcaa]">Ⅱ</span> {t('ctrlPause')}
                  </div>
 
-                 <div className="desktop-start-guide mb-5 hidden max-w-2xl grid-cols-1 gap-3 text-sm text-gray-400 sm:grid sm:grid-cols-2 sm:gap-12 md:mb-8">
-                    <div className="border-b border-gray-600 pb-3 text-left sm:border-b-0 sm:border-r sm:pr-8 sm:text-right">
-                        <h3 className="font-bold text-white mb-2 text-lg">{t('controlsTitle')}</h3>
-                        <p className="mb-1"><span className="text-[#569cd6]">WASD</span> : {t('ctrlMove')}</p>
-                        <p className="mb-1"><span className="text-[#4ec9b0]">{t('ctrlSens')}</span> : {formatSensitivity(movementSensitivity)}</p>
-                        <p className="mb-1"><span className="text-[#569cd6]">SPACE</span> : {t('ctrlShoot')}</p>
-                        <p className="mb-1"><span className="text-[#4ec9b0]">SHIFT / R</span> : {t('ctrlRefactor')}</p>
-                        <p className="mb-1"><span className="text-gray-500">ESC</span> : {t('ctrlPause')}</p>
-                    </div>
-                    <div className="sm:pl-4">
-                        <h3 className="font-bold text-white mb-2 text-lg">{t('featuresTitle')}</h3>
-                        <p className="mb-1">🧩 <span className="text-[#dcdcaa]">{t('feat1')}</span></p>
-                        <p className="mb-1">🗺️ <span className="text-[#ce9178]">{t('feat2')}</span></p>
-                        <p className="mb-1">⚡ <span className="text-[#007acc]">{t('feat3')}</span></p>
-                        <p className="mb-1">🩹 <span className="text-[#81b88b]">{t('feat4')}</span></p>
-                        <p className="mb-1">📦 <span className="text-[#C586C0]">{t('feat5')}</span></p>
-                    </div>
-                 </div>
+                 <p className="mb-3 text-center text-sm text-[#ce9178]">{t('runGoal')}</p>
+                 <p className="mb-3 hidden text-xs text-gray-400 sm:block">WASD · {t('ctrlMove')} / SPACE · {t('ctrlShoot')} / R · {t('ctrlRefactor')} / ESC · {t('ctrlPause')}</p>
+                 <LoadoutSelection profile={profile} selected={loadout} onChange={onLoadoutChange} />
 
                  <button
                    onClick={startFreshRun}
@@ -81,15 +69,15 @@ export default function GameOverlays({lang, handleLangChange, gameState, stats, 
             )}
 
             {/* Game Over Overlay */}
-            {gameState === GameState.GAME_OVER && (
-              <div className="absolute inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-[#750e0e]/95 p-4 pt-8 animate-in fade-in duration-300 sm:justify-center sm:pt-4">
-                 <h1 className="mb-2 text-center text-4xl font-bold text-white md:text-6xl">{t('buildFailed')}</h1>
+            {(gameState === GameState.GAME_OVER || won) && (
+              <div className={`absolute inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto p-4 pt-8 ${won ? 'bg-[#12332f]/95' : 'bg-[#750e0e]/95'}`}>
+                 <h1 className="mb-2 text-center text-4xl font-bold text-white md:text-6xl">{t(won ? 'runVictory' : 'buildFailed')}</h1>
                  <p className="text-red-200 mb-8 font-mono text-xl">
-                    <span className="text-gray-400">{t('exitCode')}</span> 1
+                    <span className="text-gray-400">{t('exitCode')}</span> {won ? 0 : 1}
                  </p>
 
-                 <div className="mb-5 w-full max-w-2xl rounded-md border border-red-500 bg-[#1e1e1e] p-4 font-mono text-xs shadow-2xl md:mb-8 md:w-3/4 md:p-6">
-                    <p className="text-red-400 mb-2">{t('errorAt', { wave: stats.wave })}</p>
+                 <div className={`mb-5 w-full max-w-2xl rounded-md border bg-[#1e1e1e] p-4 font-mono text-xs shadow-2xl md:mb-8 md:w-3/4 md:p-6 ${won ? 'border-[#4ec9b0]' : 'border-red-500'}`}>
+                    <p className={`mb-2 ${won ? 'text-[#4ec9b0]' : 'text-red-400'}`}>{won ? t('runComplete') : t('errorAt', { wave: stats.wave })}</p>
                     <RunReport stats={stats} />
                     <div className="mt-4 border-t border-gray-700 pt-4">
                         <div className="grid grid-cols-2 gap-4 text-sm">
@@ -111,9 +99,10 @@ export default function GameOverlays({lang, handleLangChange, gameState, stats, 
                     </div>
                  </div>
 
+                 <LoadoutSelection profile={profile} selected={loadout} onChange={onLoadoutChange} />
                  <button
                    onClick={startFreshRun}
-                   className="px-6 py-3 bg-[#28a745] hover:bg-[#2fb950] text-white font-semibold rounded-sm shadow-lg"
+                   className="sticky bottom-0 z-10 mt-3 shrink-0 px-6 py-3 bg-[#28a745] hover:bg-[#2fb950] text-white font-semibold rounded-sm shadow-lg"
                  >
                    {t('restartBtn')}
                  </button>
@@ -124,15 +113,16 @@ export default function GameOverlays({lang, handleLangChange, gameState, stats, 
             {gameState === GameState.UPGRADE && (
               <div className="absolute inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-black/80 p-3 pt-5 sm:justify-center sm:p-4">
                  <div className="mb-4 text-center sm:mb-6">
-                   <div className="text-[#4ec9b0] text-xs font-mono mb-1 uppercase tracking-widest">{t('waveDeployed', { wave: stats.wave - 1 })}</div>
+                   <div className="text-[#4ec9b0] text-xs font-mono mb-1 uppercase tracking-widest">{stats.wave === 1 ? t('openingUpgrade') : t('waveDeployed', { wave: stats.wave - 1 })}</div>
                    <h2 className="text-3xl font-bold text-white mb-1">{t('chooseUpgrade')}</h2>
-                    <p className="text-gray-400 text-sm font-mono">{t('upgradeSubtitle')}</p>
-                    <p className="mt-2 text-xs font-mono text-[#4ec9b0]">{t('waveGrowthSummary')}</p>
+                    <p className="text-gray-400 text-sm font-mono">{stats.wave === 1 ? t('openingUpgradeHint') : t('upgradeSubtitle')}</p>
+                    {stats.wave > 1 && <p className="mt-2 text-xs font-mono text-[#4ec9b0]">{t('waveGrowthSummary')}</p>}
                  </div>
 
                  <div className="flex w-full max-w-3xl flex-col gap-3 px-2 sm:flex-row sm:gap-4 sm:px-6">
                    {stats.pendingUpgrades.map((opt: UpgradeOption) => (
                      <button
+                       data-testid="upgrade-choice"
                        key={opt.id}
                        onClick={() => handleSelectUpgrade(opt.id)}
                        className="min-h-20 flex-1 border border-[#3c3c3c] bg-[#252526] hover:bg-[#2a2d2e] hover:border-[#007acc] rounded p-3 text-left transition-all group sm:p-4"

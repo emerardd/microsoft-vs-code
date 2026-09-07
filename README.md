@@ -59,7 +59,7 @@ Transform your coding workflow into an epic arcade shooter! Deploy your project 
   - 🩹 **Hotfix** - Restore 30 HP
 
 ### 📦 **Wave Upgrade System**
-After defeating each Boss, the player receives +5 max HP, +2 ammo, and +4% base damage, then chooses one smaller permanent enhancement:
+Choose one upgrade before wave one, then one after each of the first four waves. Those four clears also grant +5 max HP, +2 ammo, and +4% base damage for the current run:
 
 | Upgrade | Effect |
 |---------|--------|
@@ -84,14 +84,14 @@ After defeating each Boss, the player receives +5 max HP, +2 ammo, and +4% base 
   - Compact player HP/max display integrated into the canvas HUD
   - Persistent `R` Refactor charge bar with percentage readout and a high-contrast ready state
   - Boss health bar with distinct Phase 2 and Phase 3 warning labels
-- **Unified game clock**: movement, shooting, reloads, buffs, enemies and collisions use a fixed 60 Hz simulation. Catch-up is capped at 250 ms per rendered frame; longer stalls discard excess time consistently. Diagonal movement is normalized. Shield contact deals 60 damage every 100 ms.
+- **Unified game clock**: movement, shooting, reloads, buffs, enemies and collisions use a fixed 60 Hz simulation. Catch-up is capped at 250 ms per rendered frame; longer stalls discard excess time consistently. Diagonal movement is normalized. Shields block contact and consume touching hostile bullets without damaging enemies; contact damage never removes weapon levels.
 
 ---
 
 ### Builds and run reports
 
 - **Piercing types**: hit one additional distinct enemy per level, up to 2 levels; each bullet damages an enemy only once.
-- **Reflect API**: one side-wall bounce per level, up to 2 levels; also adds diagonal shots to the base weapon.
+- **Reflect API**: one side-wall bounce, capped at 1 level; also adds diagonal shots to the base weapon.
 - **Buffer pressure**: gain 25% damage per level at 25% ammo or less, up to 2 levels.
 - Run reports show survival time, the fatal damage source, the largest damage source and the upgrade route.
 - Sensitivity and mute preferences persist; the settings slider supports keyboard input.
@@ -116,12 +116,15 @@ On touch devices, the game area shows directional, fire, and refactor controls. 
 - Slider focus is automatically released after dragging so keyboard control returns to gameplay
 
 ### Objective
-Survive increasingly difficult waves of coding errors and deploy your project! Each wave requires you to:
-1. **Defeat enemies** to fill the Release Progress bar
-2. **Face boss battles** when the bar is full
-3. **Choose an upgrade** after defeating the Boss
-4. **Collect power-ups** to enhance your abilities
-5. **Maintain combos** for score multipliers
+Complete **five waves and one final Boss**. A practiced run targets approximately five minutes; there is no hard timer. Choose a starting upgrade, clear waves 1–4 with another choice after each, then clear wave 5 and defeat the final Boss to win. Upgrade menus pause the simulation.
+
+### Between-run progression
+
+- Clear 5 waves cumulatively to unlock the level-2 spread loadout.
+- Win once to unlock the level-1 weapon with Piercing level 1.
+- Every 5 cumulative waves grants +2 permanent HP, capped at +10. Choose one starting loadout; bonuses apply on the next run.
+- Progress is saved after wave clears. Replaying the same checkpoint does not duplicate credit. The browser uses local storage; the extension uses its global profile storage, independently of the game panel. These are separate local profiles, without cross-device sync.
+- The current kill targets (15/20/25/30/35) and combat scaling are retained for initial playtesting. The five-minute target is not yet a measured human-playtest result.
 
 ### Enemy Roster
 
@@ -254,7 +257,7 @@ Coordinates the game runtime:
 - `minimap.ts` projects the complete playable area into the reserved telemetry rail
 - `combat.ts` resolves contact, projectile damage, pickups, and entity cleanup
 - `playerSystem.ts` owns movement, status timers, ammo, reload, and shooting
-- `progression.ts` owns defeat rewards, combos, boss completion, and upgrade choices
+- `progression.ts` owns defeat rewards, combos, boss completion; `runPlan.ts` controls finite waves and upgrade eligibility
 - `refactorUltimate.ts` owns activation and damage for the ultimate ability
 - `upgrades.ts` applies selected wave upgrades and permanent run modifiers
 - `updateEnemy.ts` owns enemy movement, special behaviour, and boss phases
@@ -426,4 +429,4 @@ npm run verify:extension
 
 Browser tests use installed Edge on Windows and Chromium in CI. On other platforms, run `npx playwright install chromium`, then `CI=1 npm run test:e2e`. The test server starts and stops in-process; screenshots go to ignored `artifacts/qa/`. CI covers the web game, extension package checks and isolated Extension Host integration tests.
 
-The extension saves the next wave checkpoint after an upgrade is chosen. Reloading or restarting with the game tab restored opens that wave paused. Mid-wave enemies and bullets are not serialized. Starting a new run or dying clears the checkpoint. Ordinary hide/reveal keeps the current live run. See [optimization notes](docs/optimization-notes.md).
+The extension saves the next wave checkpoint after an upgrade is chosen. Reloading or restarting with the game tab restored opens that wave paused. Mid-wave enemies and bullets are not serialized. Starting a new run, dying, or winning clears the checkpoint; unlocked progression remains. Ordinary hide/reveal keeps the current live run. See [optimization notes](docs/optimization-notes.md).

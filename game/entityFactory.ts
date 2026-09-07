@@ -1,4 +1,4 @@
-import { COLORS, PARTICLE_CHARS, PLAYFIELD_WIDTH } from '../constants';
+import { COLORS, MAX_RICOCHET_LEVEL, PARTICLE_CHARS, PLAYFIELD_WIDTH } from '../constants';
 import type {
   Enemy,
   FloatingText,
@@ -217,7 +217,7 @@ export function createPlayerProjectiles(
   return projectiles.map(projectile => ({
     ...projectile,
     hitsRemaining: 1 + (player.pierceLevel ?? 0),
-    bouncesRemaining: player.ricochetLevel ?? 0,
+    bouncesRemaining: Math.min(MAX_RICOCHET_LEVEL, player.ricochetLevel ?? 0),
     hitEnemyIds: [],
   }));
 }

@@ -34,10 +34,10 @@ function runAt(fps: number) {
 }
 
 describe('runtime scenarios', () => {
-  it('keeps shooting, buffs, ammo and shield contact damage identical at 15/30/60/144 Hz', () => {
+  it('keeps shooting, buffs, ammo and shield protection identical at 15/30/60/144 Hz', () => {
     const baseline = runAt(60);
     for (const fps of [15, 30, 144]) expect(runAt(fps)).toEqual(baseline);
-    expect(baseline.hp).toBe(8800);
+    expect(baseline.hp).toBe(10000);
   });
 
   it('stops catch-up at a phase transition and bounds long stalls', () => {
@@ -104,12 +104,31 @@ describe('runtime scenarios', () => {
     expect(diagonal.bouncesRemaining).toBe(0);
   });
 
+  it('caps ricochet upgrades and migrates old saves without losing choice history', () => {
+    const player = createInitialPlayer();
+    for (let i = 0; i < 2; i++) applyUpgrade('RICOCHET', player, { fastGcLevel: 0, overclockLevel: 0 }, vi.fn());
+    expect(player.ricochetLevel).toBe(1);
+    player.ricochetLevel = 2;
+    expect(createPlayerProjectiles(player).every(bullet => bullet.bouncesRemaining === 1)).toBe(true);
+    const stats = createInitialGameStats();
+    stats.upgradeHistory = ['RICOCHET', 'RICOCHET'];
+    const legacy = createCheckpoint(player, stats, { fastGcLevel: 0, overclockLevel: 0 });
+    legacy.player.fireCadenceRemainderMs = 10000;
+    legacy.player.wasFiring = true;
+    const restored = parseCheckpoint(legacy)!;
+    expect(restored.player.ricochetLevel).toBe(1);
+    expect(restored.stats.upgradeHistory).toEqual(stats.upgradeHistory);
+    expect(restored.player.fireCadenceRemainderMs).toBe(0);
+    expect(restored.player.wasFiring).toBe(false);
+    expect(legacy.player.ricochetLevel).toBe(2);
+  });
+
   it('round-trips independent checkpoints and rejects corrupt or incompatible saves', () => {
     const checkpoint = createCheckpoint(createInitialPlayer(), createInitialGameStats(), { fastGcLevel: 1, overclockLevel: 2 });
     const restored = parseCheckpoint(JSON.parse(JSON.stringify(checkpoint)));
     expect(restored).toEqual(checkpoint);
     restored!.player.hp = 1;
     expect(checkpoint.player.hp).toBe(100);
-    for (const value of [null, {}, { ...checkpoint, version: 2 }, { ...checkpoint, player: { ...checkpoint.player, hp: NaN } }, { ...checkpoint, stats: { ...checkpoint.stats, upgradeHistory: ['BAD'] } }]) expect(parseCheckpoint(value)).toBeNull();
+    for (const value of [null, {}, { ...checkpoint, version: 99 }, { ...checkpoint, player: { ...checkpoint.player, hp: NaN } }, { ...checkpoint, stats: { ...checkpoint.stats, upgradeHistory: ['BAD'] } }]) expect(parseCheckpoint(value)).toBeNull();
   });
 });

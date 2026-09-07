@@ -89,27 +89,19 @@ describe('enemy defeat progression', () => {
     expect(context.spawnEnemy).toHaveBeenNthCalledWith(2, 'BUG', 120, 100, 0.5);
   });
 
-  it('advances the wave and prepares upgrades after a boss defeat', () => {
+  it('ends the run on final boss defeat without another upgrade or wave', () => {
     const context = createContext();
     context.stats.bossActive = true;
+    context.stats.wave = 5;
+    context.stats.wavesCleared = 5;
     context.player.hp = 10;
-    context.player.ammo = 1;
-
-    const result = resolveEnemyDefeat(
-      createEnemy({ type: 'MONOLITH', scoreValue: 5000 }),
-      context,
-    );
-
-    expect(context.stats.wave).toBe(2);
+    const result = resolveEnemyDefeat(createEnemy({ type: 'MONOLITH', scoreValue: 5000 }), context);
+    expect(context.stats.wave).toBe(5);
     expect(context.stats.bossActive).toBe(false);
-    expect(context.player.maxHp).toBe(105);
-    expect(context.player.maxAmmo).toBe(42);
-    expect(context.player.damageMultiplier).toBe(1.04);
-    expect(context.player.hp).toBe(context.player.maxHp);
-    expect(context.player.ammo).toBe(context.player.maxAmmo);
-    expect(result.clearEnemyProjectiles).toBe(true);
-    expect(result.upgradeChoices).toHaveLength(3);
-    expect(result.shake).toBe(20);
+    expect(context.stats.outcome).toBe('victory');
+    expect(context.player.hp).toBe(10);
+    expect(result.victory).toBe(true);
+    expect(result.upgradeChoices).toHaveLength(0);
   });
 
   it('returns a power-up when the drop roll succeeds', () => {

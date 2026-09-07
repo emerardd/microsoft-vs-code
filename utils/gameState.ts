@@ -29,6 +29,7 @@ export function createInitialPlayer(): Player {
 
 export function createInitialGameStats(lastLog = ''): GameStats {
   return {
+    runId: crypto.randomUUID(), wavesCleared: 0, outcome: 'active',
     elapsedMs: 0, entityCount: 0, projectileCount: 0, frameTimeMs: 0, updateTimeMs: 0, renderTimeMs: 0,
     upgradeHistory: [], damageTaken: {}, deathCause: '',
     score: 0,

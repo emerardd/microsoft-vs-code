@@ -11,7 +11,7 @@ import {
 } from '../constants';
 import type { GameStats, Player, Projectile } from '../types';
 import { sfxShoot } from '../utils/audio';
-import { regenerateAmmo } from '../utils/gameLogic';
+import { FRAME_DURATION, regenerateAmmo } from '../utils/gameLogic';
 import { t } from '../utils/i18n';
 import { getComboBonuses, tickComboDecay } from './combo';
 import { createPlayerProjectiles } from './entityFactory';
@@ -87,6 +87,16 @@ export function updatePlayerSystem({
   player.y = Math.max(0, Math.min(CANVAS_HEIGHT - player.height, player.y));
 
   const reloadDuration = RELOAD_TIME * (1 - Math.min(3, fastGcLevel) * 0.1);
+  const startReload = () => {
+    player.isReloading = true;
+    player.reloadTimer = reloadDuration;
+    player.fireCadenceRemainderMs = 0;
+    player.wasFiring = false;
+    stats.lastLog = t('logGcPause');
+    addFloatingText(player.x, player.y - 40, t('gcPause'), COLORS.warning);
+  };
+  const continuedFire = player.wasFiring === true && !player.isReloading && keys.has('Space');
+  if (!continuedFire) player.fireCadenceRemainderMs = 0;
   if (player.isReloading) {
     player.reloadTimer -= frameScale;
     if (player.reloadTimer <= 0) {
@@ -94,6 +104,8 @@ export function updatePlayerSystem({
       player.ammo = player.maxAmmo;
       addFloatingText(player.x, player.y - 20, t('gcComplete'), COLORS.class);
     }
+  } else if (keys.has('Space') && player.ammo < 1) {
+    startReload();
   } else if (
     !keys.has('Space')
     && player.ammo < player.maxAmmo
@@ -113,19 +125,20 @@ export function updatePlayerSystem({
     * overclockMultiplier
     * getComboBonuses(stats.combo).fireRateMultiplier;
   const canShoot = !player.isReloading && player.ammo >= 1;
-  const shouldShoot = keys.has('Space') && timestamp - lastFireTime > fireRate;
+  const elapsed = timestamp - lastFireTime + (player.fireCadenceRemainderMs ?? 0);
+  const shouldShoot = keys.has('Space') && elapsed + 1e-7 >= fireRate;
+  player.wasFiring = keys.has('Space') && canShoot;
 
   if (!shouldShoot || !canShoot) {
     return { lastFireTime, projectiles: [] };
   }
 
+  // Carry only normal fixed-step overshoot. Idle time and reloads never bank bursts.
+  const overshoot = Math.max(0, elapsed - fireRate);
+  player.fireCadenceRemainderMs = continuedFire && overshoot <= FRAME_DURATION * frameScale + 1e-7
+    ? overshoot : 0;
   player.ammo -= 1;
-  if (player.ammo <= 0) {
-    player.isReloading = true;
-    player.reloadTimer = reloadDuration;
-    stats.lastLog = t('logGcPause');
-    addFloatingText(player.x, player.y - 40, t('gcPause'), COLORS.warning);
-  }
+  if (player.ammo < 1) startReload();
 
   stats.linesOfCode++;
   sfxShoot();

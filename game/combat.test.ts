@@ -100,18 +100,33 @@ describe('combat resolution', () => {
     expect(result.projectiles).toHaveLength(0);
   });
 
-  it('lets a shield damage a colliding enemy without hurting the player', () => {
+  it('blocks contact and clears touching bullets without dealing shield damage', () => {
     const context = createContext();
     context.player.x = 100;
     context.player.y = 100;
     context.player.shield = 1;
+    context.player.invulnerable = 10;
+    context.enemyProjectiles = [createEnemyProjectile()];
     context.enemies = [createEnemy({ hp: 5, maxHp: 5 })];
 
     const result = resolveCombat(context);
 
     expect(context.player.hp).toBe(context.player.maxHp);
-    expect(context.handleEnemyDefeat).toHaveBeenCalledOnce();
+    expect(context.handleEnemyDefeat).not.toHaveBeenCalled();
+    expect(context.enemies[0].hp).toBe(5);
+    expect(context.enemyProjectiles[0].y).toBeGreaterThan(600);
     expect(result.shake).toBe(0);
+  });
+
+  it('preserves purchased weapon levels after contact damage', () => {
+    const context = createContext();
+    context.player.x = context.player.y = 100;
+    context.player.weaponLevel = 4;
+    context.enemies = [createEnemy()];
+    resolveCombat(context);
+    expect(context.player.hp).toBe(80);
+    expect(context.player.weaponLevel).toBe(4);
+    expect(context.player.invulnerable).toBe(60);
   });
 
   it('damages the player and consumes an enemy projectile', () => {

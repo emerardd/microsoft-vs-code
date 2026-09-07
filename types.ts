@@ -4,7 +4,8 @@ export enum GameState {
   PLAYING,
   GAME_OVER,
   PAUSED,
-  UPGRADE
+  UPGRADE,
+  VICTORY
 }
 
 export interface Entity {
@@ -29,6 +30,8 @@ export interface Player extends Entity {
   pierceLevel?: number;
   ricochetLevel?: number;
   lastStandLevel?: number;
+  fireCadenceRemainderMs?: number; // Sub-step firing credit; lastFireTime remains the actual shot time.
+  wasFiring?: boolean;
   damageMultiplier: number; // Permanent, gradual per-wave damage growth
   // Ammo Mechanics
   ammo: number;
@@ -74,7 +77,6 @@ export interface Enemy extends Entity {
   flashTimer: number; // For hit feedback
   wave?: number; // Spawn wave, used to scale enemy abilities
   bossComboDamage?: number; // Unbanked damage toward the next Boss combo stack
-  shieldContactTimer?: number;
   bossSummonCooldown?: number; // Frames until the Monolith can summon again
 }
 
@@ -110,6 +112,9 @@ export interface UpgradeOption {
 }
 
 export interface GameStats {
+  runId: string;
+  wavesCleared: number;
+  outcome: 'active' | 'victory' | 'defeat';
   elapsedMs: number;
   entityCount: number;
   projectileCount: number;

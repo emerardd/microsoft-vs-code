@@ -31,7 +31,8 @@ async function main(): Promise<void> {
     const resolvedTemp = tempRoot;
     const resolvedTarget = path.resolve(isolatedRoot);
     if (resolvedTarget.startsWith(`${resolvedTemp}${path.sep}`)) {
-      fs.rmSync(resolvedTarget, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
+      // Let Electron shutdown callbacks finish while Windows releases profile files.
+      await fs.promises.rm(resolvedTarget, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 });
     }
   }
 }

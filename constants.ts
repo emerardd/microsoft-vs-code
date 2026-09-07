@@ -70,6 +70,7 @@ export const PARTICLE_CHARS = ['{', '}', ';', '</>', '&&', '||', '!', 'return', 
 export const BACKGROUND_STRINGS = ['const', 'let', 'var', 'function', 'import', 'export', 'return', 'if', 'else', 'map', 'filter', 'reduce', '=>', 'async', 'await', 'try', 'catch', 'class', 'extends', 'new', 'this', 'super'];
 
 export const MAX_AMMO = 40;
+export const MAX_RICOCHET_LEVEL = 1;
 export const AMMO_REGEN = 0.4;
 export const AMMO_REGEN_DELAY_MS = 600;
 export const RELOAD_TIME = 150; 

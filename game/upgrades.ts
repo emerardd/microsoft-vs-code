@@ -1,4 +1,4 @@
-import { CANVAS_HEIGHT, COLORS, PLAYFIELD_WIDTH } from '../constants';
+import { CANVAS_HEIGHT, COLORS, MAX_RICOCHET_LEVEL, PLAYFIELD_WIDTH } from '../constants';
 import type { Player, UpgradeId } from '../types';
 import { t } from '../utils/i18n';
 
@@ -30,7 +30,7 @@ export function applyUpgrade(
       player.pierceLevel = Math.min(2, (player.pierceLevel ?? 0) + 1);
       break;
     case 'RICOCHET':
-      player.ricochetLevel = Math.min(2, (player.ricochetLevel ?? 0) + 1);
+      player.ricochetLevel = Math.min(MAX_RICOCHET_LEVEL, (player.ricochetLevel ?? 0) + 1);
       break;
     case 'LAST_STAND':
       player.lastStandLevel = Math.min(2, (player.lastStandLevel ?? 0) + 1);

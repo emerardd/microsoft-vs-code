@@ -1,6 +1,10 @@
+import { parseProfile, emptyProfile } from './metaProfile';
 import * as vscode from 'vscode';
 import { decideToggleAction } from './toggleDecision';
 import { createNonce, createWebviewHtml } from './webviewHtml';
+
+const PROFILE_KEY = 'macrohardVsCode.profile.v1';
+let profileWriteQueue: Promise<unknown> = Promise.resolve();
 
 const COMMAND_ID = 'macrohardVsCode.toggleGame';
 const DIAGNOSTICS_COMMAND_ID = 'macrohardVsCode.internal.getDiagnostics';
@@ -19,6 +23,7 @@ const STATUS_TOOLTIP = isSimplifiedChinese
 let currentPanel: vscode.WebviewPanel | undefined;
 let panelIsActive = false;
 let webviewReady = false;
+let gameMounted = false;
 
 function getPanelState(): 'missing' | 'active' | 'hidden' {
   if (!currentPanel) return 'missing';
@@ -39,6 +44,7 @@ function configurePanel(panel: vscode.WebviewPanel, context: vscode.ExtensionCon
   currentPanel = panel;
   panelIsActive = panel.active;
   webviewReady = false;
+  gameMounted = false;
   const mediaRoot = vscode.Uri.joinPath(context.extensionUri, 'media');
   const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(mediaRoot, 'game.js'));
   const styleUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(mediaRoot, 'game.css'));
@@ -53,9 +59,34 @@ function configurePanel(panel: vscode.WebviewPanel, context: vscode.ExtensionCon
   });
 
   panel.webview.onDidReceiveMessage(
-    async (message: { type?: string }) => {
+    async (message: { type?: string; profile?: unknown; requestId?: string }) => {
+      if (message.type === 'game-mounted' && currentPanel === panel) { gameMounted = true; return; }
       if (message.type === 'ready' && currentPanel === panel) {
         webviewReady = true;
+        await profileWriteQueue.catch(() => {});
+        await panel.webview.postMessage({ type: 'profile-loaded', profile: parseProfile(context.globalState.get(PROFILE_KEY)) ?? emptyProfile() });
+        return;
+      }
+      if (message.type === 'save-profile' && currentPanel === panel) {
+        const profile = parseProfile(message.profile);
+        if (!profile) {
+          await panel.webview.postMessage({ type: 'profile-saved', requestId: message.requestId, ok: false });
+          return;
+        }
+        profileWriteQueue = profileWriteQueue.catch(() => {}).then(async () => {
+          const stored = parseProfile(context.globalState.get(PROFILE_KEY)) ?? emptyProfile();
+          for (const [id, run] of Object.entries(profile.runs)) {
+            const previous = stored.runs[id];
+            stored.runs[id] = { waves: Math.max(previous?.waves ?? 0, run.waves), won: (previous?.won ?? false) || run.won };
+          }
+          await context.globalState.update(PROFILE_KEY, stored);
+        });
+        try {
+          await profileWriteQueue;
+          await panel.webview.postMessage({ type: 'profile-saved', requestId: message.requestId, ok: true });
+        } catch {
+          await panel.webview.postMessage({ type: 'profile-saved', requestId: message.requestId, ok: false });
+        }
         return;
       }
       if (message.type === 'return-to-code' && currentPanel === panel) {
@@ -80,6 +111,7 @@ function configurePanel(panel: vscode.WebviewPanel, context: vscode.ExtensionCon
       if (currentPanel === panel) currentPanel = undefined;
       panelIsActive = false;
       webviewReady = false;
+      gameMounted = false;
       void vscode.commands.executeCommand('setContext', GAME_ACTIVE_CONTEXT, false);
     },
     undefined,
@@ -136,6 +168,7 @@ export function activate(context: vscode.ExtensionContext): void {
       panelExists: currentPanel !== undefined,
       panelActive: panelIsActive,
       webviewReady,
+      gameMounted,
     })),
   );
 
@@ -151,4 +184,5 @@ export function deactivate(): void {
   currentPanel = undefined;
   panelIsActive = false;
   webviewReady = false;
+  gameMounted = false;
 }

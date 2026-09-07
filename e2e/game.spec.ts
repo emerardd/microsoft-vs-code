@@ -16,6 +16,7 @@ test('pause and hidden document do not keep drawing or accept a resume shortcut'
   await instrument(page);
   await page.goto('/');
   await page.getByRole('button', { name: 'F5 Start Debugging' }).click();
+  await page.getByTestId('upgrade-choice').first().click();
   await page.locator('canvas').click();
   await page.keyboard.press('p');
   await page.waitForTimeout(200);
@@ -83,6 +84,7 @@ test('mobile controls and layout stay inside the viewport', async ({ page }) => 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await page.getByRole('button', { name: 'F5 Start Debugging' }).click();
+  await page.getByTestId('upgrade-choice').first().click();
   await expect(page.getByRole('button', { name: 'Pause game', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: 'artifacts/qa/mobile-game.png' });
@@ -95,4 +97,56 @@ test('run report shows real outcomes and fits mobile', async ({ page }) => {
   await expect(page.getByText('Piercing types → Reflect API → Buffer pressure')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Rebuild & Restart' })).toBeVisible();
   await page.screenshot({ path: 'artifacts/qa/mobile-report.png' });
+});
+
+
+test('opening choice freezes time and enters the first wave with one upgrade', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'F5 Start Debugging' }).click();
+  await expect(page.getByText('Choose your starting upgrade', { exact: true })).toBeVisible();
+  await page.clock.install();
+  await page.clock.runFor(10000);
+  await expect(page.getByTestId('upgrade-choice')).toHaveCount(3);
+  await page.getByTestId('upgrade-choice').first().click();
+  await expect(page.getByTestId('run-stage')).toHaveText('Wave 1/5');
+});
+
+test('full five-wave run wins once, persists unlocks, and starts with the chosen loadout', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.goto('/e2e/harness.html?campaign');
+  await page.getByRole('button', { name: 'Continue run' }).click();
+  await page.clock.install();
+  let upgrades = 0;
+  await page.keyboard.down('Space');
+  for (let second = 0; second < 350; second++) {
+    await page.clock.runFor(1000);
+    if (await page.getByTestId('upgrade-choice').first().isVisible()) {
+      upgrades++;
+      await page.keyboard.up('Space');
+      await page.getByTestId('upgrade-choice').first().click();
+      await page.keyboard.down('a');
+      await page.clock.runFor(67);
+      await page.keyboard.up('a');
+      await page.keyboard.down('Space');
+    }
+    if (await page.getByText('BUILD PASSED', { exact: true }).isVisible()) break;
+  }
+  await page.keyboard.up('Space');
+  await expect(page.getByText('BUILD PASSED', { exact: true })).toBeVisible();
+  expect(upgrades).toBe(4);
+  await expect(page.getByText('5 waves cleared · 1 wins · Permanent HP +2/10')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('test-webview-state') ?? '{}').checkpoint)).toBeNull();
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('test-profile') ?? '{}'));
+  await page.screenshot({ path: 'artifacts/qa/campaign-victory.png' });
+  await page.reload();
+  // Simulate reopening the panel with no checkpoint while keeping host-level profile storage.
+  await expect(page.getByRole('radio', { name: /Piercing/ })).toBeEnabled();
+  await page.getByRole('radio', { name: /Piercing/ }).check();
+  await page.getByRole('button', { name: 'F5 Start Debugging' }).click();
+  await page.getByTestId('upgrade-choice').filter({ hasText: /Fast GC|Overclock|Buffer Overflow|Reflect API|Buffer pressure/ }).first().click();
+  const player = await page.evaluate(() => JSON.parse(localStorage.getItem('test-webview-state') ?? '{}').checkpoint.player);
+  expect(player.weaponLevel).toBe(1);
+  expect(player.pierceLevel).toBe(1);
+  expect(player.maxHp).toBe(102);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('test-profile') ?? '{}'))).toEqual(saved);
 });
