@@ -138,7 +138,7 @@ export function createPlayerProjectiles(
   player: Player,
   random: RandomSource = Math.random,
 ): Projectile[] {
-  const damageScale = player.damageMultiplier;
+  const damageScale = player.damageMultiplier * (player.ammo / player.maxAmmo <= 0.25 ? 1 + (player.lastStandLevel ?? 0) * 0.25 : 1);
   const weaponLevel = Math.min(
     5,
     player.weaponLevel + (player.weaponBuff > 0 ? 1 : 0),
@@ -156,7 +156,7 @@ export function createPlayerProjectiles(
     type: 'DEFAULT',
   }];
 
-  if (weaponLevel >= 2) {
+  if (weaponLevel >= 2 || (player.ricochetLevel ?? 0) > 0) {
     projectiles.push(
       {
         id: random().toString(),
@@ -214,7 +214,12 @@ export function createPlayerProjectiles(
     );
   }
 
-  return projectiles;
+  return projectiles.map(projectile => ({
+    ...projectile,
+    hitsRemaining: 1 + (player.pierceLevel ?? 0),
+    bouncesRemaining: player.ricochetLevel ?? 0,
+    hitEnemyIds: [],
+  }));
 }
 
 export function createPowerUpDrop(

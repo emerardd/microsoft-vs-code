@@ -1,4 +1,4 @@
-import { CANVAS_HEIGHT } from '../constants';
+import { CANVAS_HEIGHT, PLAYFIELD_WIDTH } from '../constants';
 import type {
   EnemyProjectile,
   FloatingText,
@@ -13,10 +13,16 @@ export function advancePlayerProjectiles(
   projectiles.forEach((projectile) => {
     projectile.x += projectile.vx * frameScale;
     projectile.y += projectile.vy * frameScale;
+    if ((projectile.bouncesRemaining ?? 0) > 0
+      && (projectile.x < 0 || projectile.x + projectile.width > PLAYFIELD_WIDTH)) {
+      projectile.vx *= -1;
+      projectile.x = Math.max(0, Math.min(PLAYFIELD_WIDTH - projectile.width, projectile.x));
+      projectile.bouncesRemaining = (projectile.bouncesRemaining ?? 0) - 1;
+    }
   });
 
   return projectiles.filter(
-    (projectile) => projectile.y > -50 && projectile.y < CANVAS_HEIGHT + 50,
+    isProjectileInBounds,
   );
 }
 
@@ -29,7 +35,7 @@ export function advanceEnemyProjectiles(
     projectile.y += projectile.vy * frameScale;
   });
 
-  return projectiles.filter((projectile) => projectile.y < CANVAS_HEIGHT + 50);
+  return projectiles.filter(isProjectileInBounds);
 }
 
 export function advanceParticles(
@@ -56,4 +62,9 @@ export function advanceFloatingTexts(
   });
 
   return floatingTexts.filter((floatingText) => floatingText.life > 0);
+}
+
+function isProjectileInBounds(projectile: Projectile | EnemyProjectile): boolean {
+  return projectile.x >= -50 && projectile.x <= PLAYFIELD_WIDTH + 50
+    && projectile.y >= -50 && projectile.y <= CANVAS_HEIGHT + 50;
 }

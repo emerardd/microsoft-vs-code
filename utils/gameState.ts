@@ -29,6 +29,8 @@ export function createInitialPlayer(): Player {
 
 export function createInitialGameStats(lastLog = ''): GameStats {
   return {
+    elapsedMs: 0, entityCount: 0, projectileCount: 0, frameTimeMs: 0, updateTimeMs: 0, renderTimeMs: 0,
+    upgradeHistory: [], damageTaken: {}, deathCause: '',
     score: 0,
     bugsFixed: 0,
     linesOfCode: 0,

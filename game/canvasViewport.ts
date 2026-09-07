@@ -36,6 +36,7 @@ export function resizeCanvasToDisplaySize(
   devicePixelRatio = window.devicePixelRatio,
 ): boolean {
   const container = canvas.parentElement?.getBoundingClientRect();
+  if (container && (container.width <= 0 || container.height <= 0)) return false;
   const viewport = calculateCanvasViewport(
     container?.width ?? CANVAS_WIDTH,
     container?.height ?? CANVAS_HEIGHT,

@@ -20,7 +20,8 @@
     "package:extension": "npm run verify:extension && npm --prefix extension run package",
     "preview": "vite preview",
     "predeploy": "npm run verify",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "react": "^19.2.0",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

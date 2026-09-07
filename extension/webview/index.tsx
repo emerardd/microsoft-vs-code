@@ -1,9 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from '../../App';
+import type { Checkpoint } from '../../game/checkpoint';
 import '../../index.css';
 
 interface VsCodeApi {
+  getState(): { checkpoint?: unknown } | undefined;
+  setState(state: { checkpoint: Checkpoint | null }): void;
   postMessage(message: { type: string }): void;
 }
 
@@ -20,6 +23,8 @@ const vscode = acquireVsCodeApi();
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <App
+      initialCheckpoint={vscode.getState()?.checkpoint}
+      onCheckpoint={checkpoint => vscode.setState({ checkpoint })}
       embedded
       onRequestReturn={() => vscode.postMessage({ type: 'return-to-code' })}
     />

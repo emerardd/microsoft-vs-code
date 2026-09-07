@@ -58,6 +58,9 @@ export const UPGRADE_OPTIONS = [
   { id: 'MAX_AMMO',  icon: '📦' },
   { id: 'RELOAD',    icon: '⚙️' },
   { id: 'OVERCLOCK', icon: '🔥' },
+  { id: 'PIERCE', icon: '↟' },
+  { id: 'RICOCHET', icon: '↔' },
+  { id: 'LAST_STAND', icon: '⚠' },
 ] as const satisfies readonly UpgradeOption[];
 
 export const PLAYER_SPEED = 5;

@@ -30,10 +30,11 @@ export function setControlPressed(keysRef: KeyStateRef, code: string, pressed: b
 export function useGameInput(
   keysRef: KeyStateRef,
   setGameState: Dispatch<SetStateAction<GameState>>,
+  active = true,
 ): void {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (shouldIgnoreKeyboardEvent(event.target)) return;
+      if (!active || shouldIgnoreKeyboardEvent(event.target)) return;
 
       if (shouldTogglePause(event.code, event.repeat)) {
         setGameState(previous => {
@@ -43,15 +44,19 @@ export function useGameInput(
         });
       }
 
+      if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.code)) event.preventDefault();
       keysRef.current.add(event.code);
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      if (shouldIgnoreKeyboardEvent(event.target)) return;
       keysRef.current.delete(event.code);
     };
 
     const clearKeys = () => keysRef.current.clear();
+    if (!active) {
+      clearKeys();
+      setGameState(previous => previous === GameState.PLAYING ? GameState.PAUSED : previous);
+    }
     const pauseWhenHidden = () => {
       if (document.visibilityState !== 'hidden') return;
       clearKeys();
@@ -71,5 +76,5 @@ export function useGameInput(
       window.removeEventListener('blur', clearKeys);
       document.removeEventListener('visibilitychange', pauseWhenHidden);
     };
-  }, [keysRef, setGameState]);
+  }, [active, keysRef, setGameState]);
 }

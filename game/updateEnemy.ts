@@ -29,6 +29,7 @@ function pushEnemyProjectile(
   label: string,
   color: string,
   size = 12,
+  source?: EnemyType,
 ): void {
   projectiles.push({
     id: `ep-${random()}`,
@@ -41,6 +42,7 @@ function pushEnemyProjectile(
     color,
     damage,
     label,
+    source,
   });
 }
 
@@ -71,6 +73,7 @@ function fireAimedProjectile(
     label,
     color,
     size,
+    enemy.type,
   );
 }
 
@@ -140,6 +143,7 @@ export function updateEnemy(enemy: Enemy, context: EnemyUpdateContext): void {
           '∞',
           COLORS.keyword,
           10,
+          enemy.type,
         );
       });
     }
@@ -280,6 +284,7 @@ export function updateEnemy(enemy: Enemy, context: EnemyUpdateContext): void {
         '✖',
         COLORS.error,
         14,
+        enemy.type,
       );
     });
   }

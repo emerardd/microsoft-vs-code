@@ -26,6 +26,9 @@ export interface Player extends Entity {
   speedBuff: number; // Frames remaining for speed boost
   weaponBuff: number; // Frames remaining for temporary Copilot weapon boost
   shield: number; // Frames remaining for shield
+  pierceLevel?: number;
+  ricochetLevel?: number;
+  lastStandLevel?: number;
   damageMultiplier: number; // Permanent, gradual per-wave damage growth
   // Ammo Mechanics
   ammo: number;
@@ -38,10 +41,14 @@ export interface Player extends Entity {
 
 export interface Projectile extends Entity {
   damage: number;
+  hitsRemaining?: number;
+  hitEnemyIds?: string[];
+  bouncesRemaining?: number;
   type: 'DEFAULT' | 'TS_BEAM' | 'SUDO_BLAST';
 }
 
 export interface EnemyProjectile extends Entity {
+  source?: EnemyType;
   damage: number;
   label: string; // e.g. "⚠" or "Error"
 }
@@ -67,6 +74,7 @@ export interface Enemy extends Entity {
   flashTimer: number; // For hit feedback
   wave?: number; // Spawn wave, used to scale enemy abilities
   bossComboDamage?: number; // Unbanked damage toward the next Boss combo stack
+  shieldContactTimer?: number;
   bossSummonCooldown?: number; // Frames until the Monolith can summon again
 }
 
@@ -94,7 +102,7 @@ export interface FloatingText {
   vy: number;
 }
 
-export type UpgradeId = 'WEAPON' | 'MAX_HP' | 'MAX_AMMO' | 'RELOAD' | 'OVERCLOCK';
+export type UpgradeId = 'WEAPON' | 'MAX_HP' | 'MAX_AMMO' | 'RELOAD' | 'OVERCLOCK' | 'PIERCE' | 'RICOCHET' | 'LAST_STAND';
 
 export interface UpgradeOption {
   id: UpgradeId;
@@ -102,6 +110,15 @@ export interface UpgradeOption {
 }
 
 export interface GameStats {
+  elapsedMs: number;
+  entityCount: number;
+  projectileCount: number;
+  frameTimeMs: number;
+  updateTimeMs: number;
+  renderTimeMs: number;
+  upgradeHistory: UpgradeId[];
+  damageTaken: Record<string, number>;
+  deathCause: string;
   score: number;
   bugsFixed: number;
   linesOfCode: number;

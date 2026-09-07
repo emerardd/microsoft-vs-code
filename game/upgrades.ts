@@ -26,6 +26,15 @@ export function applyUpgrade(
   const y = CANVAS_HEIGHT / 2;
 
   switch (upgrade) {
+    case 'PIERCE':
+      player.pierceLevel = Math.min(2, (player.pierceLevel ?? 0) + 1);
+      break;
+    case 'RICOCHET':
+      player.ricochetLevel = Math.min(2, (player.ricochetLevel ?? 0) + 1);
+      break;
+    case 'LAST_STAND':
+      player.lastStandLevel = Math.min(2, (player.lastStandLevel ?? 0) + 1);
+      break;
     case 'WEAPON':
       player.weaponLevel = Math.min(5, player.weaponLevel + 1);
       addFloatingText(x, y, t('compilerUpgraded'), COLORS.class);

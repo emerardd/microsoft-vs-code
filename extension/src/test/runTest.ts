@@ -6,7 +6,9 @@ import { runTests } from '@vscode/test-electron';
 async function main(): Promise<void> {
   const extensionDevelopmentPath = path.resolve(__dirname, '..', '..');
   const extensionTestsPath = path.resolve(__dirname, 'suite', 'index');
-  const isolatedRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'macrohard-vs-code-test-'));
+  const tempRoot = path.resolve(process.env.MACROHARD_TEST_TMPDIR ?? os.tmpdir());
+  fs.mkdirSync(tempRoot, { recursive: true });
+  const isolatedRoot = fs.mkdtempSync(path.join(tempRoot, 'macrohard-vs-code-test-'));
   const userDataDir = path.join(isolatedRoot, 'user-data');
   const extensionsDir = path.join(isolatedRoot, 'extensions');
   const vscodeExecutablePath = process.env.VSCODE_EXECUTABLE_PATH;
@@ -26,10 +28,10 @@ async function main(): Promise<void> {
       ],
     });
   } finally {
-    const resolvedTemp = path.resolve(os.tmpdir());
+    const resolvedTemp = tempRoot;
     const resolvedTarget = path.resolve(isolatedRoot);
     if (resolvedTarget.startsWith(`${resolvedTemp}${path.sep}`)) {
-      fs.rmSync(resolvedTarget, { recursive: true, force: true });
+      fs.rmSync(resolvedTarget, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
     }
   }
 }

@@ -77,10 +77,13 @@ export function resolveCombat({
   let shake = 0;
 
   enemies.forEach((enemy) => {
-    if (!intersects(player, enemy)) return;
+    enemy.shieldContactTimer = Math.max(0, (enemy.shieldContactTimer ?? 0) - frameScale);
+    if (player.hp <= 0 || enemy.hp <= 0 || !intersects(player, enemy)) return;
 
     if (player.shield > 0) {
-      const damage = Math.min(enemy.hp, 10);
+      if (enemy.shieldContactTimer > 0) return;
+      enemy.shieldContactTimer = 6;
+      const damage = Math.min(enemy.hp, 60);
       enemy.hp = applyDamage(enemy.hp, damage);
       showBossComboGain(
         enemy,
@@ -95,6 +98,7 @@ export function resolveCombat({
 
     if (player.invulnerable > 0) return;
 
+    recordDamage(stats, enemy.type, Math.min(player.hp, 20));
     player.hp -= 20;
     player.invulnerable = 60;
     player.weaponLevel = Math.max(1, player.weaponLevel - 1);
@@ -108,11 +112,12 @@ export function resolveCombat({
   });
 
   enemyProjectiles.forEach((projectile) => {
-    if (player.invulnerable > 0 || !intersects(player, projectile)) return;
+    if (player.hp <= 0 || player.invulnerable > 0 || !intersects(player, projectile)) return;
 
     if (player.shield > 0) {
       addFloatingText(player.x, player.y - 20, t('blocked'), '#0db7ed');
     } else {
+      recordDamage(stats, projectile.source ? `projectile:${projectile.source}` : projectile.label, Math.min(player.hp, projectile.damage));
       player.hp -= projectile.damage;
       player.invulnerable = 40;
       penalizeCombo(stats);
@@ -132,13 +137,11 @@ export function resolveCombat({
   });
 
   projectiles.forEach((projectile) => {
-    if (projectile.damage <= 0) return;
+    if (player.hp <= 0 || projectile.damage <= 0) return;
 
-    // A projectile is spent on the first enemy it touches. `some` stops the scan
-    // there, so enemies overlapping the same point no longer take phantom hits
-    // (white flash, particles and a hit sound for zero damage).
+    // Stop when penetration is spent; never hit the same enemy twice.
     enemies.some((enemy) => {
-      if (enemy.hp <= 0 || !intersects(projectile, enemy)) return false;
+      if (enemy.hp <= 0 || projectile.hitEnemyIds?.includes(enemy.id) || !intersects(projectile, enemy)) return false;
 
       const damage = Math.min(
         enemy.hp,
@@ -151,15 +154,18 @@ export function resolveCombat({
         addFloatingText,
       );
       enemy.flashTimer = 3;
-      projectile.damage = 0;
+      projectile.hitEnemyIds = [...(projectile.hitEnemyIds ?? []), enemy.id];
+      projectile.hitsRemaining = (projectile.hitsRemaining ?? 1) - 1;
+      if (projectile.hitsRemaining <= 0) projectile.damage = 0;
       createExplosion(projectile.x, projectile.y, COLORS.text, 1);
       sfxHit();
       handleEnemyDefeat(enemy);
-      return true;
+      return projectile.damage <= 0;
     });
   });
 
   powerUps.forEach((powerUp) => {
+    if (player.hp <= 0) return;
     powerUp.y += 2 * frameScale;
     if (!intersects(player, powerUp)) return;
 
@@ -193,4 +199,9 @@ export function resolveCombat({
     powerUps: powerUps.filter((powerUp) => powerUp.y < CANVAS_HEIGHT),
     shake,
   };
+}
+
+function recordDamage(stats: GameStats, source: string, damage: number): void {
+  stats.damageTaken[source] = (stats.damageTaken[source] ?? 0) + damage;
+  stats.deathCause = source;
 }

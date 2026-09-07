@@ -124,6 +124,13 @@ export function activate(context: vscode.ExtensionContext): void {
   void vscode.commands.executeCommand('setContext', GAME_ACTIVE_CONTEXT, false);
 
   context.subscriptions.push(
+    vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, {
+      async deserializeWebviewPanel(panel) {
+        panel.webview.options = { enableScripts: true, localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media')] };
+        configurePanel(panel, context);
+        await vscode.commands.executeCommand('setContext', GAME_ACTIVE_CONTEXT, panel.active);
+      },
+    }),
     vscode.commands.registerCommand(COMMAND_ID, () => toggleGame(context)),
     vscode.commands.registerCommand(DIAGNOSTICS_COMMAND_ID, () => ({
       panelExists: currentPanel !== undefined,

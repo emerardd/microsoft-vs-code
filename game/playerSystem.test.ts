@@ -33,8 +33,8 @@ describe('player system', () => {
 
     updatePlayerSystem(context);
 
-    expect(context.player.x).toBe(startX - 9);
-    expect(context.player.y).toBe(startY - 9);
+    expect(context.player.x).toBeCloseTo(startX - 9 / Math.SQRT2);
+    expect(context.player.y).toBeCloseTo(startY - 9 / Math.SQRT2);
     expect(context.player.speedBuff).toBe(9);
     expect(context.player.weaponBuff).toBe(9);
   });

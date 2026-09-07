@@ -1,10 +1,10 @@
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { GameState, Player, Projectile, Enemy, Particle, GameStats, PowerUp, FloatingText, EnemyProjectile, UpgradeId } from '../types';
 import { COLORS, CANVAS_WIDTH, CANVAS_HEIGHT, BACKGROUND_STRINGS, PLAYFIELD_WIDTH } from '../constants';
 import { sfxBossAppear } from '../utils/audio';
 import { t } from '../utils/i18n';
-import { FRAME_DURATION, getFrameScale } from '../utils/gameLogic';
+import { FRAME_DURATION } from '../utils/gameLogic';
 import { createInitialGameStats, createInitialPlayer } from '../utils/gameState';
 import { renderPausedFrame, renderScene, renderStartFrame } from '../game/renderScene';
 import type { BackgroundParticle } from '../game/renderScene';
@@ -34,9 +34,15 @@ import {
   prepareGameContext,
   resizeCanvasToDisplaySize,
 } from '../game/canvasViewport';
+import { SimulationClock } from '../game/simulationClock';
+import { createCheckpoint, type Checkpoint } from '../game/checkpoint';
 import TouchControls, { TouchControlCode } from './TouchControls';
 
 interface GameEngineProps {
+  active: boolean;
+  language: string;
+  checkpoint?: Checkpoint | null;
+  onCheckpoint?: (checkpoint: Checkpoint | null) => void;
   gameState: GameState;
   setGameState: (state: React.SetStateAction<GameState>) => void;
   onStatsUpdate: (stats: GameStats) => void;
@@ -48,6 +54,7 @@ interface GameEngineProps {
 }
 
 const GameEngine: React.FC<GameEngineProps> = ({
+  active, language, checkpoint, onCheckpoint,
   gameState,
   setGameState,
   onStatsUpdate,
@@ -56,6 +63,11 @@ const GameEngine: React.FC<GameEngineProps> = ({
   movementSensitivity,
   restartToken
 }) => {
+  const clockRef = useRef(new SimulationClock());
+  const phaseRef = useRef(gameState);
+  phaseRef.current = gameState;
+  const restoredRef = useRef(false);
+  const [viewportRevision, setViewportRevision] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // ── Player state ──────────────────────────────────────────────────────────
@@ -102,9 +114,11 @@ const GameEngine: React.FC<GameEngineProps> = ({
   }, [onStatsUpdate]);
 
   const triggerGameOver = useCallback(() => {
+    phaseRef.current = GameState.GAME_OVER;
+    onCheckpoint?.(null);
     syncStatsToUI();
     setGameState(GameState.GAME_OVER);
-  }, [syncStatsToUI, setGameState]);
+  }, [syncStatsToUI, setGameState, onCheckpoint]);
 
   const createExplosion = (x: number, y: number, color: string, count: number) => {
     particlesRef.current.push(...createExplosionParticles(x, y, color, count));
@@ -130,6 +144,21 @@ const GameEngine: React.FC<GameEngineProps> = ({
     overclockLevelRef.current = modifiers.overclockLevel;
 
     statsRef.current.pendingUpgrades = [];
+    statsRef.current.levelProgress = 0;
+    statsRef.current.upgradeHistory.push(pendingUpgrade);
+    enemiesRef.current = [];
+    projectilesRef.current = [];
+    enemyProjectilesRef.current = [];
+    powerUpsRef.current = [];
+    particlesRef.current = [];
+    floatingTextsRef.current = [];
+    playerRef.current.x = PLAYFIELD_WIDTH / 2;
+    playerRef.current.y = CANVAS_HEIGHT - 60;
+    playerRef.current.isReloading = false;
+    playerRef.current.reloadTimer = 0;
+    lastSpawnTimeRef.current = clockRef.current.time;
+    lastFireTimeRef.current = clockRef.current.time;
+    onCheckpoint?.(createCheckpoint(playerRef.current, statsRef.current, modifiers));
     syncStatsToUI();
     onUpgradeConsumed();
     setGameState(GameState.PLAYING);
@@ -154,6 +183,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
   };
 
   const handleEnemyDefeat = (enemy: Enemy, grantSpecialCharge = true) => {
+      if (playerRef.current.hp <= 0 || phaseRef.current !== GameState.PLAYING) return;
       const result = resolveEnemyDefeat(enemy, {
         player: playerRef.current,
         stats: statsRef.current,
@@ -161,6 +191,9 @@ const GameEngine: React.FC<GameEngineProps> = ({
         createExplosion,
         addFloatingText,
         excludedUpgrades: [
+          ...((playerRef.current.pierceLevel ?? 0) >= 2 ? ['PIERCE' as const] : []),
+          ...((playerRef.current.ricochetLevel ?? 0) >= 2 ? ['RICOCHET' as const] : []),
+          ...((playerRef.current.lastStandLevel ?? 0) >= 2 ? ['LAST_STAND' as const] : []),
           ...(playerRef.current.weaponLevel >= 5 ? ['WEAPON' as const] : []),
           ...(fastGcLevelRef.current >= 3 ? ['RELOAD' as const] : []),
           ...(overclockLevelRef.current >= 3 ? ['OVERCLOCK' as const] : []),
@@ -181,6 +214,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
       if (result.upgradeChoices.length > 0) {
           statsRef.current.pendingUpgrades = result.upgradeChoices;
           syncStatsToUI();
+          phaseRef.current = GameState.UPGRADE;
           setGameState(GameState.UPGRADE);
       }
   };
@@ -219,14 +253,21 @@ const GameEngine: React.FC<GameEngineProps> = ({
     keysRef.current.clear();
     statsRef.current = createInitialGameStats(t('logNewSession'));
     lastFireTimeRef.current = 0;
-    lastSpawnTimeRef.current = performance.now();
-    lastTimeRef.current = performance.now();
+    clockRef.current.reset();
+    lastSpawnTimeRef.current = 0;
+    lastTimeRef.current = 0;
     lastStatsSyncTimeRef.current = 0;
     syncStatsToUI();
   }, [syncStatsToUI]);
 
+  useEffect(() => {
+    if (active && (gameState === GameState.PLAYING || gameState === GameState.PAUSED)) {
+      canvasRef.current?.focus({ preventScroll: true });
+    }
+  }, [active, gameState]);
+
   // ── Input setup ───────────────────────────────────────────────────────────
-  useGameInput(keysRef, setGameState);
+  useGameInput(keysRef, setGameState, active);
 
   useEffect(() => {
     bgParticlesRef.current = Array.from({ length: 20 }, () => ({
@@ -242,7 +283,9 @@ const GameEngine: React.FC<GameEngineProps> = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const resize = () => resizeCanvasToDisplaySize(canvas);
+    const resize = () => {
+      if (resizeCanvasToDisplaySize(canvas)) setViewportRevision(value => value + 1);
+    };
     resize();
 
     const observer = typeof ResizeObserver !== 'undefined'
@@ -260,20 +303,24 @@ const GameEngine: React.FC<GameEngineProps> = ({
   // ── Game Loop ─────────────────────────────────────────────────────────────
   const gameLoop = useCallback((timestamp: number) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !active) return;
     const ctx = prepareGameContext(canvas);
     if (!ctx) return;
 
-    // ─ Paused / Upgrade: freeze logic, dim frame, keep rAF alive ─
+    // Paused / upgrade frames redraw only on state, language, or viewport changes.
     if (gameState === GameState.PAUSED || gameState === GameState.UPGRADE) {
         // BUG FIX #5: Keep lastTimeRef in sync so the first active frame
         // doesn't inherit a large deltaTime spike from the idle period.
         lastTimeRef.current = timestamp;
 
-        // Freeze the last active frame once, then repaint it every tick. The
+        // Freeze the last active frame once; redraw only when invalidated. The
         // overlay used to be stacked onto the live canvas, so its alpha
         // accumulated and the paused scene faded to black within a second.
         if (!frozenFrameRef.current) {
+          renderScene({ ctx, timestamp, frameScale: 0, player: playerRef.current, stats: statsRef.current,
+            backgroundParticles: bgParticlesRef.current, enemyProjectiles: enemyProjectilesRef.current,
+            enemies: enemiesRef.current, projectiles: projectilesRef.current, powerUps: powerUpsRef.current,
+            particles: particlesRef.current, floatingTexts: floatingTextsRef.current, shake: 0 });
           frozenFrameRef.current = captureCanvasSnapshot(canvas);
         }
         renderPausedFrame(
@@ -281,7 +328,6 @@ const GameEngine: React.FC<GameEngineProps> = ({
           gameState === GameState.PAUSED,
           frozenFrameRef.current,
         );
-        frameIdRef.current = requestAnimationFrame(gameLoop);
         return;
     }
 
@@ -290,18 +336,22 @@ const GameEngine: React.FC<GameEngineProps> = ({
     if (gameState !== GameState.PLAYING) {
         if (gameState === GameState.START) {
           renderStartFrame(ctx, bgParticlesRef.current);
-          frameIdRef.current = requestAnimationFrame(gameLoop);
+
         }
         return;
     }
 
     // ─ Active frame ─
-    const deltaTime = timestamp - lastTimeRef.current;
+    const deltaTime = lastTimeRef.current ? timestamp - lastTimeRef.current : FRAME_DURATION;
     lastTimeRef.current = timestamp;
-    const frameScale = getFrameScale(deltaTime);
-    statsRef.current.fps = Math.round(1000 / (deltaTime || FRAME_DURATION));
-
+    const frameScale = 1;
+    statsRef.current.fps = Math.round(1000 / Math.max(1, deltaTime));
+    statsRef.current.frameTimeMs = deltaTime;
     const player = playerRef.current;
+    const updateStart = performance.now();
+    clockRef.current.advance(deltaTime, simulationTime => {
+    const timestamp = simulationTime;
+    statsRef.current.elapsedMs += FRAME_DURATION;
 
     // 1. Background
     bgParticlesRef.current.forEach(p => {
@@ -329,6 +379,8 @@ const GameEngine: React.FC<GameEngineProps> = ({
     });
     lastFireTimeRef.current = playerResult.lastFireTime;
     projectilesRef.current.push(...playerResult.projectiles);
+
+    if (phaseRef.current !== GameState.PLAYING) return false;
 
     // 5. Boss / Enemy spawning
     if (!statsRef.current.bossActive && statsRef.current.levelProgress >= statsRef.current.levelTarget) {
@@ -385,17 +437,27 @@ const GameEngine: React.FC<GameEngineProps> = ({
     particlesRef.current = advanceParticles(particlesRef.current, frameScale);
     floatingTextsRef.current = advanceFloatingTexts(floatingTextsRef.current, frameScale);
 
+    return phaseRef.current === GameState.PLAYING;
+    });
+    statsRef.current.updateTimeMs = performance.now() - updateStart;
+    statsRef.current.projectileCount = projectilesRef.current.length + enemyProjectilesRef.current.length;
+    statsRef.current.entityCount = statsRef.current.projectileCount + enemiesRef.current.length
+      + particlesRef.current.length + floatingTextsRef.current.length + powerUpsRef.current.length;
+
     // Throttled stats sync
     if (timestamp - lastStatsSyncTimeRef.current >= 100) {
         lastStatsSyncTimeRef.current = timestamp;
         syncStatsToUI();
     }
 
+    if (phaseRef.current !== GameState.PLAYING) syncStatsToUI();
+
     // ── RENDER ──────────────────────────────────────────────────────────────
+    const renderStart = performance.now();
     shakeRef.current = renderScene({
       ctx,
       timestamp,
-      frameScale,
+      frameScale: Math.min(250, deltaTime) / FRAME_DURATION,
       player,
       stats: statsRef.current,
       backgroundParticles: bgParticlesRef.current,
@@ -408,33 +470,48 @@ const GameEngine: React.FC<GameEngineProps> = ({
       shake: shakeRef.current,
     });
 
-    frameIdRef.current = requestAnimationFrame(gameLoop);
+    statsRef.current.renderTimeMs = performance.now() - renderStart;
+    if (phaseRef.current === GameState.PLAYING) frameIdRef.current = requestAnimationFrame(gameLoop);
   // Engine helpers mutate refs only. Adding their render-local identities here would
   // restart the animation loop every time the throttled stats UI re-renders.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState, movementSensitivity, onStatsUpdate, setGameState, syncStatsToUI, triggerGameOver]);
+  }, [active, language, viewportRevision, gameState, movementSensitivity, onStatsUpdate, setGameState, syncStatsToUI, triggerGameOver]);
 
   useEffect(() => {
-    const shouldReset = gameState === GameState.START || restartToken !== lastRestartTokenRef.current;
+    if (!restoredRef.current && checkpoint) {
+      const saved = structuredClone(checkpoint);
+      playerRef.current = saved.player;
+      statsRef.current = saved.stats;
+      fastGcLevelRef.current = saved.modifiers.fastGcLevel;
+      overclockLevelRef.current = saved.modifiers.overclockLevel;
+      clockRef.current.reset(saved.stats.elapsedMs);
+      lastSpawnTimeRef.current = clockRef.current.time;
+      lastFireTimeRef.current = clockRef.current.time;
+      restoredRef.current = true;
+      syncStatsToUI();
+    }
+    const shouldReset = restartToken !== lastRestartTokenRef.current;
     if (shouldReset) {
       resetGame();
       lastRestartTokenRef.current = restartToken;
     }
-    frameIdRef.current = requestAnimationFrame(gameLoop);
+    lastTimeRef.current = 0;
+    if (active) frameIdRef.current = requestAnimationFrame(gameLoop);
 
     return () => cancelAnimationFrame(frameIdRef.current);
-  }, [gameState, gameLoop, resetGame, restartToken]);
+  }, [active, checkpoint, gameState, gameLoop, resetGame, restartToken, syncStatsToUI]);
 
   const handleTouchControl = useCallback((code: TouchControlCode, pressed: boolean) => {
-    setControlPressed(keysRef, code, pressed);
-  }, []);
+    if (active || !pressed) setControlPressed(keysRef, code, pressed);
+  }, [active]);
 
   const handlePauseToggle = useCallback(() => {
+    if (!active) return;
     keysRef.current.clear();
     setGameState(previous => (
       previous === GameState.PLAYING ? GameState.PAUSED : GameState.PLAYING
     ));
-  }, [setGameState]);
+  }, [active, setGameState]);
 
   return (
     <div className={`game-shell ${gameState === GameState.PLAYING || gameState === GameState.PAUSED ? 'game-shell--active' : ''}`}>
@@ -443,6 +520,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
           ref={canvasRef}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
+          tabIndex={0}
           role="img"
           aria-label={t('gameCanvasLabel')}
           className="game-canvas cursor-none border border-[#333] shadow-2xl shadow-black"

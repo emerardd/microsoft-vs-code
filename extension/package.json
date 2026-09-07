@@ -13,9 +13,19 @@
     "vscode": "^1.90.0"
   },
   "icon": "images/icon.png",
-  "categories": ["Other"],
-  "keywords": ["game", "arcade", "break", "developer", "canvas"],
-  "extensionKind": ["ui"],
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "game",
+    "arcade",
+    "break",
+    "developer",
+    "canvas"
+  ],
+  "extensionKind": [
+    "ui"
+  ],
   "main": "./dist/extension.js",
   "capabilities": {
     "untrustedWorkspaces": {
@@ -65,5 +75,8 @@
   "overrides": {
     "diff": "8.0.3",
     "serialize-javascript": "7.0.5"
-  }
+  },
+  "activationEvents": [
+    "onWebviewPanel:macrohardVsCode.game"
+  ]
 }

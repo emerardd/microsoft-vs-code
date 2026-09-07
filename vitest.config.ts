@@ -5,6 +5,7 @@ export default defineConfig({
     exclude: [
       ...configDefaults.exclude,
       'extension/dist/**',
+      'e2e/**',
       'extension/src/test/suite/**',
     ],
   },

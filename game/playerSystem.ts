@@ -77,18 +77,11 @@ export function updatePlayerSystem({
     triggerUltimate();
   }
 
-  if (keys.has('ArrowLeft') || keys.has('KeyA')) {
-    player.x -= currentSpeed * frameScale;
-  }
-  if (keys.has('ArrowRight') || keys.has('KeyD')) {
-    player.x += currentSpeed * frameScale;
-  }
-  if (keys.has('ArrowUp') || keys.has('KeyW')) {
-    player.y -= currentSpeed * frameScale;
-  }
-  if (keys.has('ArrowDown') || keys.has('KeyS')) {
-    player.y += currentSpeed * frameScale;
-  }
+  const dx = Number(keys.has('ArrowRight') || keys.has('KeyD')) - Number(keys.has('ArrowLeft') || keys.has('KeyA'));
+  const dy = Number(keys.has('ArrowDown') || keys.has('KeyS')) - Number(keys.has('ArrowUp') || keys.has('KeyW'));
+  const magnitude = Math.hypot(dx, dy) || 1;
+  player.x += dx / magnitude * currentSpeed * frameScale;
+  player.y += dy / magnitude * currentSpeed * frameScale;
 
   player.x = Math.max(0, Math.min(PLAYFIELD_WIDTH - player.width, player.x));
   player.y = Math.max(0, Math.min(CANVAS_HEIGHT - player.height, player.y));

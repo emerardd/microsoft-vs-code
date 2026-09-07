@@ -84,9 +84,18 @@ After defeating each Boss, the player receives +5 max HP, +2 ammo, and +4% base 
   - Compact player HP/max display integrated into the canvas HUD
   - Persistent `R` Refactor charge bar with percentage readout and a high-contrast ready state
   - Boss health bar with distinct Phase 2 and Phase 3 warning labels
-- **Frame-Rate Independent Movement**: Player, enemies, projectiles, and timers scale with real frame time for consistent gameplay across all machines
+- **Unified game clock**: movement, shooting, reloads, buffs, enemies and collisions use a fixed 60 Hz simulation. Catch-up is capped at 250 ms per rendered frame; longer stalls discard excess time consistently. Diagonal movement is normalized. Shield contact deals 60 damage every 100 ms.
 
 ---
+
+### Builds and run reports
+
+- **Piercing types**: hit one additional distinct enemy per level, up to 2 levels; each bullet damages an enemy only once.
+- **Reflect API**: one side-wall bounce per level, up to 2 levels; also adds diagonal shots to the base weapon.
+- **Buffer pressure**: gain 25% damage per level at 25% ammo or less, up to 2 levels.
+- Run reports show survival time, the fatal damage source, the largest damage source and the upgrade route.
+- Sensitivity and mute preferences persist; the settings slider supports keyboard input.
+- Diagnostics show actual entity/projectile counts, frame interval, simulation CPU time and Canvas submission CPU time (not GPU time).
 
 ## 🎮 Game Mechanics
 
@@ -406,3 +415,15 @@ Made with ❤️ by developers, for developers
 ⭐ **Star this repo** if you enjoy the game! | 🐛 **Report bugs** in Issues | 💬 **Share** with fellow devs
 
 </div>
+
+### Automated verification
+
+```bash
+npm run verify
+npm run test:e2e
+npm run verify:extension
+```
+
+Browser tests use installed Edge on Windows and Chromium in CI. On other platforms, run `npx playwright install chromium`, then `CI=1 npm run test:e2e`. The test server starts and stops in-process; screenshots go to ignored `artifacts/qa/`. CI covers the web game, extension package checks and isolated Extension Host integration tests.
+
+The extension saves the next wave checkpoint after an upgrade is chosen. Reloading or restarting with the game tab restored opens that wave paused. Mid-wave enemies and bullets are not serialized. Starting a new run or dying clears the checkpoint. Ordinary hide/reveal keeps the current live run. See [optimization notes](docs/optimization-notes.md).

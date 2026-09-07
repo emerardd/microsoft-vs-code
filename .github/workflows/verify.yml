@@ -1,0 +1,39 @@
+name: Verify game and extension
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  game:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-results
+          path: test-results/
+  extension:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            extension/package-lock.json
+      - run: npm ci
+      - run: npm ci --prefix extension
+      - run: npm run verify:extension
+      - run: xvfb-run -a npm --prefix extension run test:integration
