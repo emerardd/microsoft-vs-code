@@ -1,16 +1,33 @@
 <div align="center">
 
-# 微软大战代码：游戏版
+<img src="./vscode.png" alt="VS Code" width="120" />
 
-**微软 &nbsp;[大战]&nbsp; 代码** —— VS 从来不是 Visual Studio，是“大战”。
+# 🎮 微软大战代码：游戏版
+
+### 微软 &nbsp;⚔️ 大战 ⚔️&nbsp; 代码
+
+*在你最爱的代码编辑器里开打的街机射击游戏*
+
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8.1-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 [English](./README.md) | **简体中文**
 
+<br/>
+
 <a href="http://vscode.emerard.me/">
-  <img src="https://img.shields.io/badge/▶️_立即游玩-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white&labelColor=1f1f1f" height="44" />
+  <img src="https://img.shields.io/badge/▶️_立即游玩-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white&labelColor=1f1f1f" height="72" alt="立即游玩" />
 </a>
 
+<br/><br/>
+
 ![游戏演示](./Gameplay.gif)
+
+**[🕹️ 怎么玩](#怎么玩)** • **[🧩 扩展](#vs-code-扩展)** • **[💻 开发](#开发)**
+
+*“VS 从来不是 Visual Studio，是‘大战’。”*
 
 </div>
 

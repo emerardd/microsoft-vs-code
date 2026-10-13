@@ -1,16 +1,33 @@
 <div align="center">
 
-# Microsoft VS Code: The Game
+<img src="./vscode.png" alt="VS Code" width="120" />
 
-**MICROSOFT &nbsp;[VS]&nbsp; CODE** — the "VS" was never short for Visual Studio. It means *versus*.
+# 🎮 Microsoft VS Code: The Game
+
+### MICROSOFT &nbsp;⚔️ VS ⚔️&nbsp; CODE
+
+*An arcade shooter set inside your favorite code editor*
+
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8.1-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 **English** | [简体中文](./README.zh-CN.md)
 
+<br/>
+
 <a href="http://vscode.emerard.me/">
-  <img src="https://img.shields.io/badge/▶️_Play_Now-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white&labelColor=1f1f1f" height="44" />
+  <img src="https://img.shields.io/badge/▶️_PLAY_NOW-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white&labelColor=1f1f1f" height="72" alt="Play Now" />
 </a>
 
+<br/><br/>
+
 ![Gameplay Demo](./Gameplay.gif)
+
+**[🕹️ How to play](#how-to-play)** • **[🧩 Extension](#vs-code-extension)** • **[💻 Development](#development)**
+
+*"The VS was never short for Visual Studio. It means versus."*
 
 </div>
 
