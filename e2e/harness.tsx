@@ -8,6 +8,7 @@ import { emptyProfile } from '../game/metaProgression';
 import { createCheckpoint } from '../game/checkpoint';
 import { createInitialGameStats, createInitialPlayer } from '../utils/gameState';
 import GameOverlays from '../components/GameOverlays';
+import { getBrand } from '../utils/brand';
 import '../index.css';
 
 export function InputFixture() {
@@ -27,7 +28,7 @@ if (new URLSearchParams(location.search).has('report')) {
   const stats = createInitialGameStats();
   Object.assign(stats, { score: 12500, wave: 4, wavesCleared: 3, outcome: 'defeat', maxCombo: 28, bugsFixed: 95, elapsedMs: 192000,
     deathCause: 'projectile:MONOLITH', damageTaken: { 'projectile:MONOLITH': 85, BUG: 20 }, upgradeHistory: ['PIERCE', 'RICOCHET', 'LAST_STAND'] });
-  createRoot(document.getElementById('root')!).render(<GameOverlays lang="en" handleLangChange={() => {}} gameState={GameState.GAME_OVER} stats={stats} embedded={false} embeddedBrandName="" highScore={12500} newRecord movementSensitivity={1} startFreshRun={() => {}} handleSelectUpgrade={() => {}} />);
+  createRoot(document.getElementById('root')!).render(<GameOverlays lang="en" handleLangChange={() => {}} gameState={GameState.GAME_OVER} stats={stats} embedded={false} brand={getBrand('en', false)} highScore={12500} newRecord startFreshRun={() => {}} handleSelectUpgrade={() => {}} />);
 } else if (new URLSearchParams(location.search).has('input')) {
   createRoot(document.getElementById('root')!).render(<InputFixture />);
 } else {

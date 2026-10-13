@@ -43,7 +43,7 @@ const HoldButton = ({
       draggable={false}
       aria-label={ariaLabel}
       disabled={disabled}
-      className={`touch-key flex items-center justify-center border border-[#5a5a5a] bg-[#252526]/95 text-sm font-bold text-white shadow-lg shadow-black/40 active:border-[#9cdcfe] active:bg-[#094771] disabled:opacity-35 ${className}`}
+      className={`touch-key flex items-center justify-center border border-vsc-muted bg-vsc-sidebar/95 text-sm font-bold text-white shadow-lg shadow-black/40 active:border-syntax-variable active:bg-vsc-selection disabled:opacity-35 ${className}`}
       onPointerDown={(event) => {
         event.preventDefault();
         event.currentTarget.setPointerCapture(event.pointerId);
@@ -107,7 +107,7 @@ const TouchControls = ({ onControlChange, onPauseToggle, paused }: TouchControls
     <button
       type="button"
       draggable={false}
-      className="touch-pause pointer-events-auto flex h-11 min-w-11 items-center justify-center rounded-md border border-[#5a5a5a] bg-[#252526]/95 px-3 text-base font-bold text-[#dcdcaa] shadow-lg shadow-black/40 active:border-[#dcdcaa] active:bg-[#3c3c3c]"
+      className="touch-pause pointer-events-auto flex h-11 min-w-11 items-center justify-center rounded-md border border-vsc-muted bg-vsc-sidebar/95 px-3 text-base font-bold text-syntax-func shadow-lg shadow-black/40 active:border-syntax-func active:bg-vsc-control"
       aria-label={paused ? t('touchResume') : t('touchPause')}
       onClick={onPauseToggle}
       onContextMenu={(event) => event.preventDefault()}
@@ -120,7 +120,7 @@ const TouchControls = ({ onControlChange, onPauseToggle, paused }: TouchControls
         code="KeyR"
         label="R"
         ariaLabel={t('touchRefactor')}
-        className="h-14 w-14 rounded-full border-[#c586c0] text-[#e8c7e8]"
+        className="h-14 w-14 rounded-full border-syntax-control text-[#e8c7e8]"
         disabled={paused}
         onControlChange={onControlChange}
       />
@@ -128,7 +128,7 @@ const TouchControls = ({ onControlChange, onPauseToggle, paused }: TouchControls
         code="Space"
         label="</>"
         ariaLabel={t('touchShoot')}
-        className="h-[4.5rem] w-[4.5rem] rounded-full border-[#007acc] bg-[#094771]/95 text-[#9cdcfe]"
+        className="h-[4.5rem] w-[4.5rem] rounded-full border-vsc-accent bg-vsc-selection/95 text-syntax-variable"
         disabled={paused}
         onControlChange={onControlChange}
       />

@@ -61,6 +61,61 @@ input:focus-visible {
   user-select: none;
 }
 
+/* ── Title card: MICROSOFT [VS] CODE / 微软 [大战] 代码 ───────────────────── */
+
+.brand-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: clamp(1.5rem, 6vw, 3rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.brand-fighter {
+  animation: brand-enter 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.brand-fighter--left {
+  --enter-from: -2.5rem;
+  color: #3794ff;
+  text-shadow: 0 0 24px rgb(55 148 255 / 35%);
+}
+
+.brand-fighter--right {
+  --enter-from: 2.5rem;
+  color: #f14c4c;
+  text-shadow: 0 0 24px rgb(241 76 76 / 35%);
+}
+
+.brand-versus {
+  display: inline-block;
+  padding: 0.2em 0.45em;
+  font-size: 0.7em;
+  font-style: italic;
+  color: #1e1e1e;
+  background: linear-gradient(135deg, #ffd866 0%, #f2a33a 55%, #f14c4c 100%);
+  border: 2px solid #1e1e1e;
+  box-shadow: 0 0 0 2px #ffd866, 0 6px 20px rgb(0 0 0 / 50%);
+  transform: skewX(-12deg);
+  animation: brand-clash 520ms 300ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+@keyframes brand-enter {
+  from { opacity: 0; transform: translateX(var(--enter-from)); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes brand-clash {
+  from { opacity: 0; transform: skewX(-12deg) scale(2.2); }
+  to { opacity: 1; transform: skewX(-12deg) scale(1); }
+}
+
 .workbench-shell {
   height: 100vh;
   height: 100dvh;

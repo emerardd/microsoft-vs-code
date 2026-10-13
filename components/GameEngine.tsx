@@ -541,7 +541,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
 
   return (
     <div className={`game-shell ${gameState === GameState.PLAYING || gameState === GameState.PAUSED ? 'game-shell--active' : ''}`}>
-      {(gameState === GameState.PLAYING || gameState === GameState.PAUSED) && <div className="absolute top-1 left-1/2 z-10 -translate-x-1/2 bg-[#252526]/90 px-3 py-1 text-xs text-[#dcdcaa]" data-testid="run-stage">{statsRef.current.bossActive ? t('finalBossStage') : t('runStage', { wave: statsRef.current.wave })}</div>}
+      {(gameState === GameState.PLAYING || gameState === GameState.PAUSED) && <div className="absolute top-1 left-1/2 z-10 -translate-x-1/2 bg-vsc-sidebar/90 px-3 py-1 text-xs text-syntax-func" data-testid="run-stage">{statsRef.current.bossActive ? t('finalBossStage') : t('runStage', { wave: statsRef.current.wave })}</div>}
       <div className="game-canvas-stage">
         <canvas
           ref={canvasRef}
@@ -550,7 +550,7 @@ const GameEngine: React.FC<GameEngineProps> = ({
           tabIndex={0}
           role="img"
           aria-label={t('gameCanvasLabel')}
-          className="game-canvas cursor-none border border-[#333] shadow-2xl shadow-black"
+          className="game-canvas cursor-none border border-vsc-activity shadow-2xl shadow-black"
         />
       </div>
       {(gameState === GameState.PLAYING || gameState === GameState.PAUSED) && (
