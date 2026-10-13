@@ -1,434 +1,119 @@
 <div align="center">
 
-# 🎮 微软大战代码: 游戏版
+# 微软大战代码：游戏版
 
-### *在你最爱的代码编辑器中开启街机射击之旅*
+**微软 &nbsp;[大战]&nbsp; 代码** —— VS 从来不是 Visual Studio，是“大战”。
 
-<img src="./vscode.png" alt="VS Code" />
-
-[![React](https://img.shields.io/badge/React-19.2.0-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-8.1.5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-
+[English](./README.md) | **简体中文**
 
 <a href="http://vscode.emerard.me/">
-  <img src="https://img.shields.io/badge/▶️_立即游玩-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white&labelColor=1f1f1f" height="50" />
+  <img src="https://img.shields.io/badge/▶️_立即游玩-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white&labelColor=1f1f1f" height="44" />
 </a>
-
-<br/>
 
 ![游戏演示](./Gameplay.gif)
 
-**[📖 文档](#游戏机制)** • **[🎯 特性](#特性)** • **[💻 开发](#开发)**
-
----
-
-**[English](./README.md)** | 简体中文
-
----
-
-*"如果调试是一场真正的战斗会怎样？"*
-
-将你的编程工作流程转变为史诗级街机射击游戏！通过击败 Bug、语法错误和可怕的遗留代码巨石来部署你的项目。每一波都会带来新的挑战，重构你的代码直到 1.0 版本……以及更远！
-
 </div>
 
----
+一款把名字当真的街机射击游戏：微软手握 TypeScript 编译器，和代码本身开战。整个游戏运行在复刻的 VS Code 工作台里，Bug、语法错误和遗留代码巨石 MONOLITH 挡在你和版本发布之间。
 
-## 🎯 特性
+## 怎么玩
 
-### 🕹️ **原汁原味的 VS Code 体验**
-- **像素级完美 UI**：精心还原的 VS Code 界面，包含活动栏、侧边栏、编辑器标签、终端和状态栏
-- **交互式侧边栏**：
-  - 📁 **资源管理器** - 查看项目统计和发布进度
-  - 🔍 **搜索** - 浏览敌人数据库及详细信息
-  - 🌿 **源代码管理** - 追踪你在各个波次中的提交历史
-  - 🐛 **调试** - 监控性能指标、连击数和本地最高分
-  - 🧩 **扩展** - 查看已安装的道具和升级情况
-  - ⚙️ **设置** - 调整移动灵敏度，开关音效
+| 按键 | 操作 |
+|---|---|
+| `WASD` / 方向键 | 移动 |
+| `空格` | 射击 |
+| `R` / `Shift` | 重构大招（`R` 充能条满时） |
+| `Esc` / `P` | 暂停 |
 
-### ⚔️ **激烈的游戏玩法**
-- **9 种独特敌人类型**：从基础 Bug 🪲 到合并冲突 ⚠️ 再到恐怖的 MONOLITH 终极 Boss
-- **Boss 三阶段**：MONOLITH 入场即召唤援军，后续版本会逐步提高小怪预算、追踪弹、散射弹、移动速度与最终阶段五路弹幕的压力
-- **渐进式难度**：敌人生命、速度、奖励、阵容与攻击会逐关成长；普通关采用更平滑且有场上数量上限的生成节奏，玩家通关也会获得小幅基础成长
-- **连击系统**：连击逐层衰减；每削掉 Boss 5% 最大生命可获得 1 层，并提供有上限的得分、伤害、射速和大招充能增益
-- **本地最高分**：最佳成绩通过浏览器 `localStorage` 保存，开始界面和游戏结束界面均可查看
-- **能力增强道具**：
-  - ☕ **咖啡** - 速度提升
-  - 🤖 **GitHub Copilot** - 临时提升 1 级武器，持续 8 秒
-  - 🐳 **Docker** - 临时护盾
-  - 🩹 **热修复（Hotfix）** - 恢复 30 点生命值
+触屏设备会显示方向键、射击、重构和暂停按钮。
 
-### 📦 **波次间升级系统**
-开局进行一次三选一，前四波清完后各再进行一次。这四次清波还会获得本局最大生命 +5、弹药 +2、基础伤害 +4%：
+**一局**包含五波敌人和一个最终 Boss，熟练后约 5 分钟。第 1 波前选一个升级，第 1–4 波每波结束后再选一个；这四次清波还会额外给 +5 最大生命、+2 弹药和 +4% 伤害。清完第 5 波并击败 MONOLITH 即获胜。选升级时游戏暂停。
 
-| 升级项 | 效果 |
-|--------|------|
-| ⚡ 编译器升级 | TypeScript 编译器 +1 级（更多弹幕） |
-| ❤️ 堆扩容 | 最大生命值 +12，并恢复 12 点生命 |
-| 📦 缓冲区溢出 | 弹匣容量 +5，并恢复 5 发弹药 |
-| ⚙️ 快速 GC | 每层装弹加快 10%，最多 30% |
-| 🔥 超频 CPU | 每层射速提升 8%，最多 24% |
+<details>
+<summary><b>升级</b>（8 种）</summary>
 
-### 🎨 **精致的游戏机制**
-- **高级武器系统**：
-  - 弹药管理和自动装填
-  - TypeScript 编译器升级（最高 5 级）
-  - 终极技能"重构"（按 R/Shift）
-- **WebAudio 音效**：纯振荡器合成的 SFX，涵盖射击、命中、爆炸、拾取、回血、Boss 登场、大招释放、波次通关——可在状态栏和设置面板随时静音
-- **视觉效果**：
-  - 敌人被摧毁时的粒子爆炸
-  - 浮动伤害数字
-  - 受击闪烁反馈
-  - 连击计量器动画
-- **更清晰的战斗 HUD**：
-  - 画布内紧凑的当前/最大生命值显示
-  - 常驻的 `R` 重构充能条，显示百分比并在就绪时切换为高对比提示
-  - Boss 血条会显示独立的第二、第三阶段警告标签
-- **统一游戏时钟**：移动、射击、装填、Buff、敌人和碰撞均以 60 Hz 固定时间步推进；单帧最多补算 250 ms，超长卡顿统一丢弃超额时间。斜向移动归一化；护盾阻挡碰撞并消除接触到的敌方子弹，不造成撞击伤害；普通碰撞不再降低武器等级。
+| 升级 | 效果 |
+|---|---|
+| ⚡ 编译器升级 | 武器等级 +1（弹道更多，上限 5） |
+| ❤️ 堆内存扩容 | 最大生命 +12，并回复 12 |
+| 📦 缓冲区溢出 | 弹匣 +5，并回复 5 发 |
+| ⚙️ 快速 GC | 每层换弹快 10%（上限 30%） |
+| 🔥 超频 CPU | 每层射速快 8%（上限 24%） |
+| ↟ 类型穿透 | 每级多穿透一个不同敌人（上限 2 级） |
+| ↔ 反射 API | 侧墙反弹一次，并为基础武器增加斜射（上限 1 级） |
+| ⚠ 缓冲区压力 | 弹药 ≤25% 时每级伤害 +25%（上限 2 级） |
 
----
+</details>
 
-### 本局构筑与复盘
+<details>
+<summary><b>敌人</b>（9 种）</summary>
 
-- **类型穿透**：每层让子弹额外命中一个不同敌人，最多 2 层，同一颗子弹不会重复伤害同一敌人。
-- **反射 API**：子弹可在侧壁反弹一次，最多 1 层；基础武器也会获得斜射弹。
-- **缓冲区压力**：弹药不高于 25% 时每层增伤 25%，最多 2 层。
-- 结束界面展示真实存活时间、致命伤害来源、主要受伤来源和升级路线。
-- 灵敏度和静音设置自动保存；键盘可直接操作设置滑杆。
-- 调试面板展示真实实体数、弹幕数、帧间隔、逻辑耗时和 Canvas 绘制提交耗时，后者不等同于 GPU 耗时。
+| 敌人 | 符号 | 生命 | 分数 | 行为 |
+|---|---|---|---|---|
+| Bug | 🪲 | 10 | 100 | 缓慢追踪玩家 |
+| 语法错误 | `};` | 20 | 200 | 皮厚，会瞄准射击 |
+| 意大利面代码 | `goto` | 15 | 150 | 快速且飘忽 |
+| 内存泄漏 | `malloc()` | 40 | 300 | 越长越大越硬，同时变慢 |
+| 404 错误 | `404` | 15 | 250 | 反弹移动，周期性冲刺 |
+| 合并冲突 | `<<<<` | 35 | 350 | 死亡时分裂 |
+| 死循环 | `while(1)` | 25 | 400 | 螺旋移动，四向弹幕 |
+| 竞态条件 | `async` | 20 | 500 | 瞬移后攻击 |
+| **MONOLITH** | `LegacyWrapper` | 600 | 5000 | 三阶段 Boss：召唤小兵、追踪弹、散射 |
 
-## 🎮 游戏机制
+</details>
 
-### 操作方式
-```
-WASD       → 移动玩家
-空格键      → 发射 TypeScript 子弹
-SHIFT / R  → 重构大招（充能后）
-ESC / P    → 暂停游戏
-```
+**道具：** ☕ 咖啡（加速）· 🤖 Copilot（8 秒内武器等级 +1）· 🐳 Docker（护盾）· 🩹 Hotfix（+30 生命）
 
-在触屏设备上，游戏区域底部会显示四向移动、射击和重构大招按钮；活动栏会打开可关闭的移动端侧边栏。
+**连击**随击杀累积（对 Boss 每造成 5% 生命伤害也 +1），提供有上限的分数、伤害、射速和大招充能加成。
 
-### 调整与设置
-- 点击活动栏底部的齿轮图标打开 **设置**
-- 可将 **移动灵敏度** 调整在 `0.5x` 到 `2.0x` 之间
-- 可开关 **音效** —— 或点击状态栏的 🔔 图标快速静音
-- 拖动滑杆后会自动失焦，键盘控制会立即回到游戏
+**局外成长：** 累计清 5 波解锁散射起手，首次通关解锁穿透起手，每累计 5 波永久 +2 生命（上限 +10）。进度和最高分保存在本地。
 
-### 游戏目标
-完成 **5 波杂兵 + 最终 Boss**。以熟练玩家约 5 分钟通关为目标，没有强制倒计时。开局选择一次升级，前四波清完后各再选择一次；第五波清完后迎战最终 Boss，击败即通关。升级菜单暂停模拟计时。
+## 工作台就是界面
 
-### 局外成长
+每个 VS Code 面板都显示本局的真实信息：
 
-- 累计完成 5 波，解锁武器等级 2 的散射起手。
-- 首次通关，解锁武器等级 1 + 穿透 1 级的穿透起手。
-- 每累计完成 5 波永久生命 +2，上限 +10。每局选择一种起手配置，加成从下一局生效。
-- 每次清波保存进度，重复恢复同一检查点不会重复计入。浏览器使用本地存储；扩展使用独立于游戏标签页的全局进度存储。两端各自保存，不跨设备同步。
-- 第一版保留原清波目标（15/20/25/30/35）和战斗成长数值用于试玩；约 5 分钟仍是设计目标，尚非真人试玩测量结果。
+- **资源管理器** —— 分数、波次和发布进度；可打开敌人目录和项目元数据
+- **搜索** —— 敌人数据库
+- **源代码管理** —— 把已清的波次显示成版本历史
+- **运行和调试** —— 帧间隔、实体数、最高连击
+- **扩展** —— 已安装的升级及其实时状态
+- **设置** —— 移动灵敏度、音效、English / 中文
+- **问题面板 / 状态栏** —— 警告数是本波剩余的 Bug；Boss 在场时就是那个阻塞发布的错误
 
-### 敌人名册
+## VS Code 扩展
 
-| 敌人 | 符号 | 生命值 | 分数 | 行为特点 |
-|-------|--------|----|----|----------|
-| **Bug** | 🪲 | 10 | 100 | 会逐渐向玩家方向追踪 |
-| **语法错误** | `};` | 20 | 200 | 耐打的远程敌人，会发射瞄准弹 |
-| **面条代码** | `goto` | 15 | 150 | 快速且移动飘忽 |
-| **内存泄漏** | `malloc()` | 40 | 300 | 体积与生命持续增长，同时逐渐减速 |
-| **404 错误** | `404` | 15 | 250 | 来回反弹，并定期向玩家方向冲刺 |
-| **合并冲突** | `<<<<` | 35 | 350 | 死后会分裂成小敌人 |
-| **死循环** | `while(1)` | 25 | 400 | 螺旋移动并发射四路弹幕 |
-| **竞态条件** | `async` | 20 | 500 | 随机瞬移，并从新位置发动攻击 |
-| **MONOLITH** 👹 | `LegacyWrapper` | 600 | 5000 | 三阶段 Boss：追踪弹、散射弹与逐步强化的召唤 |
-
-### 进度系统
-- **武器等级**：编译器升级可永久提升武器等级，最高 5 级；Copilot 只会临时提升 1 级，持续 8 秒
-- **弹药系统**：最大 40 发（可扩容），缓慢自动回复，装填时间可通过升级缩短
-- **特殊技能条**：普通击杀会填充显眼的 `R` 进度条，充满后切换为脉冲就绪状态；被"重构"清除的敌人不会为它自身返还能量
-- **波次系统**：每个版本发布难度递增（v1.0, v2.0, v3.0…）
-- **本地最高分**：通过 `localStorage` 持久化，在开始和游戏结束界面展示，超越时显示「NEW RECORD!」
-
----
-
-## 🚀 快速开始
-
-### 环境要求
-- **Node.js**（20.19+ 的 20.x 版本，或 22.12+）
-- **npm** 或 **yarn**
-
-### 安装步骤
+`extension/` 会把游戏打包成 **巨硬大战代码**（Macrohard vs Code），一个不读取工作区、不联网的独立 Webview。按 `Ctrl+Alt+G`（macOS 为 `Cmd+Alt+G`）进入游戏，再按一次暂停并回到编辑器。每次选完升级都会保存检查点，重启 VS Code 后从那一波开头继续。
 
 ```bash
-# 克隆仓库
-git clone https://github.com/emerardd/microsoft-vs-code.git
-cd microsoft-vs-code
-
-# 安装依赖
-npm install
-
-# 启动开发服务器
-npm run dev
-```
-
-游戏将在 `http://localhost:3000` 打开 🎮
-
-### 生产环境构建
-
-```bash
-# 构建优化版本
-npm run build
-
-# 运行类型检查、Lint、测试和生产构建
-npm run verify
-
-# 预览生产构建
-npm run preview
-
-# 部署到 GitHub Pages
-npm run deploy
-```
-
----
-
-## 💻 开发
-
-### 项目结构
-
-```
-microsoft-vs-code/
-├── components/
-│   ├── GameEngine.tsx      # 帧循环与运行时调度
-│   └── TouchControls.tsx   # 移动端触控键帽
-├── game/
-│   ├── advanceEntities.ts  # 弹丸与短生命周期实体推进
-│   ├── canvasViewport.ts   # 响应式高分屏 Canvas 尺寸
-│   ├── combat.ts           # 碰撞效果与伤害结算
-│   ├── collision.ts        # 通用碰撞检测
-│   ├── combo.ts            # 连击衰减与增益曲线
-│   ├── contentSelection.ts # 敌人、升级与道具选择
-│   ├── entityFactory.ts    # 敌人、弹丸与特效实体构造
-│   ├── minimap.ts          # 全高世界位置遥测
-│   ├── playerSystem.ts     # 移动、计时、换弹与射击
-│   ├── progression.ts      # 分数、连击、波次与击败奖励
-│   ├── refactorUltimate.ts # 重构终极技能
-│   ├── renderScene.ts      # Canvas 场景渲染
-│   ├── spawnDirector.ts    # 普通关与 Boss 援军节奏
-│   ├── updateEnemy.ts      # 敌人与 Boss 行为更新
-│   ├── upgrades.ts         # 波次升级效果
-│   └── useGameInput.ts     # 键盘输入生命周期
-├── utils/
-│   ├── audio.ts            # WebAudio 合成音效引擎
-│   ├── gameLogic.ts        # 可测试的时间、伤害、输入纯逻辑
-│   ├── gameState.ts        # 玩家与统计初始状态工厂
-│   └── i18n.ts             # 中英文翻译和语言持久化
-├── App.tsx                 # VS Code UI 外壳、侧边栏、覆盖层
-├── types.ts                # 游戏实体的 TypeScript 接口
-├── constants.ts            # 游戏配置、敌人数据、升级选项
-├── index.css               # 本地 Tailwind 入口与全局可访问性样式
-├── index.tsx               # React 入口点
-├── index.html              # HTML 模板
-└── vscode.png              # VS Code logo 资源
-```
-
-### 技术栈
-
-- **React 19.2** - UI 框架
-- **TypeScript 5.8** - 类型安全
-- **Vite 8.1** - 构建工具和开发服务器
-- **HTML5 Canvas** - 游戏渲染
-- **Web Audio API** - 程序化音效
-- **CSS3 / Tailwind 3** - 本地编译的 VS Code 样式，不依赖运行时 CDN
-- **Vitest / ESLint** - 游戏纯逻辑测试和静态质量门禁
-
-### 核心组件
-
-#### `GameEngine.tsx`
-负责协调游戏运行时：
-- 按真实时间推进的游戏循环，减少帧率差异带来的速度变化
-- 可变实体状态与 `requestAnimationFrame` 生命周期
-- 敌人生成、战斗、成长与升级流程协调
-- 将输入、碰撞、敌人行为和绘制委托给独立模块
-- 波次升级触发 → `GameState.UPGRADE`
-
-#### `game/` 模块
-- `useGameInput.ts`：负责键盘监听、清理与暂停切换
-- `entityFactory.ts`：创建敌人、Boss、弹丸、道具与特效实体
-- `advanceEntities.ts`：推进弹丸、粒子与浮动文字
-- `canvasViewport.ts`：让 Canvas 文字在不同像素密度下保持清晰
-- `minimap.ts`：将完整可玩区域投影到预留的右侧遥测轨道
-- `combat.ts`：结算接触伤害、弹丸伤害、道具拾取与实体清理
-- `playerSystem.ts`：负责移动、状态计时、弹药、换弹与射击
-- `progression.ts`：负责击败奖励、连击、Boss 通关与升级选项
-- `refactorUltimate.ts`：负责终极技能的激活与伤害
-- `upgrades.ts`：应用波次升级与永久局内增益
-- `updateEnemy.ts`：负责敌人移动、特殊行为与 Boss 阶段
-- `collision.ts`：提供通用碰撞检测
-- `contentSelection.ts`：负责带权随机内容选择
-- `renderScene.ts`：负责 Canvas 绘制与视觉特效
-
-#### `App.tsx`
-处理 VS Code 界面：
-- 活动栏导航
-- 动态侧边栏视图（资源管理器、搜索、Git、调试、扩展、设置）
-- 波次升级遮罩（三选一卡片 UI）
-- 通过 `localStorage` 持久化最高分
-- 终端日志显示
-- 开始 / 游戏结束画面
-- 音效开关
-
-#### `utils/audio.ts`
-轻量级程序化音效：
-- 无外部音频文件——所有音效通过 `OscillatorNode` 和白噪声合成
-- 全局静音开关
-- 函数：`sfxShoot`、`sfxHit`、`sfxExplosion`、`sfxPowerUp`、`sfxHeal`、`sfxBossAppear`、`sfxUltimate`、`sfxPlayerHit`、`sfxWaveClear`
-
----
-
-## 🧩 VS Code 扩展
-
-`extension/` 子包会将游戏构建成 **巨硬大战代码**（英文名：**Macrohard vs Code**）Webview 扩展，不读取工作区文件，也不需要网络访问。按 `Ctrl+Alt+G`（macOS 为 `Cmd+Alt+G`）进入游戏，再按同一快捷键即可暂停并回到上一个编辑器；隐藏的 Webview 会保留，因此再次进入时会继续当前战局，而不是重新加载。
-
-```bash
-# 安装扩展专用的构建与打包依赖
 npm --prefix extension install
-
-# 单元测试、Webview 构建、扩展宿主类型检查/构建、打包清单检查
-npm run verify:extension
-
-# 生成 artifacts/macrohard-vs-code-0.1.0.vsix
-npm run package:extension
+npm run package:extension   # → artifacts/macrohard-vs-code-0.1.0.vsix
 ```
 
-可通过 `npm --prefix extension run test:integration` 运行隔离的 Extension Development Host 集成测试。设置 `VSCODE_EXECUTABLE_PATH` 指向本机 VS Code 可执行文件，可以避免额外下载 VS Code。
+## 开发
 
----
-
-## 🎨 自定义
-
-### 修改敌人难度
-
-编辑 `constants.ts`：
-
-```typescript
-export const ENEMY_TYPES = [
-  {
-    type: 'BUG',
-    text: '🪲',
-    hp: 10,        // 增加数值让 Bug 更耐打
-    score: 100,    // 调整分数值
-    speed: 1.5,    // 越高越快
-    color: '#f14c4c',
-    width: 24,
-    desc: '普通Bug，数量众多'
-  },
-  // 添加你自己的敌人！
-]
-```
-
-### 调整游戏平衡
-
-```typescript
-// constants.ts
-export const PLAYER_SPEED = 5;             // 移动速度
-export const MAX_AMMO = 40;                // 弹药容量
-export const AMMO_REGEN = 0.4;             // 每帧恢复量
-export const SPECIAL_CHARGE_PER_KILL = 5;  // 大招充能速率
-```
-
-### 添加新升级项
-
-```typescript
-// constants.ts
-export const UPGRADE_OPTIONS = [
-  {
-    id: 'MY_UPGRADE',
-    icon: '🔥'
-  }
-]
-```
-
-新增敌人不只需要添加配置：还要同步扩展 `types.ts` 中的 `EnemyType`，为 `descKey` 添加中英文翻译，将类型加入 `game/contentSelection.ts` 的波次生成分布，并在 `game/updateEnemy.ts` 实现特殊行为。最后运行 `npm run verify`。
-
-然后完成以下步骤：
-
-1. 在 `types.ts` 的 `UpgradeId` 联合类型中加入 `'MY_UPGRADE'`。
-2. 在 `utils/i18n.ts` 的中英文表中分别加入 `upg_MY_UPGRADE_title` 和 `upg_MY_UPGRADE_desc`。
-3. 在 `game/upgrades.ts` 的 `applyUpgrade` switch 中实现效果：
-
-```typescript
-case 'MY_UPGRADE':
-  // 你的自定义逻辑
-  break;
-```
-
-4. 为升级效果补测试，并运行 `npm run verify`。
-
----
-
-## 🐛 已知问题
-
-- [ ] 碰撞箱可能需要微调以实现像素级完美碰撞
-- [ ] 某些机器上超过 200 个实体时性能下降
-
----
-
-## 🤝 贡献
-
-欢迎贡献！参与方式：
-
-1. **Fork** 这个仓库
-2. **创建** 特性分支（`git checkout -b feature/AmazingFeature`）
-3. **提交** 你的更改（`git commit -m 'Add some AmazingFeature'`）
-4. **推送** 到分支（`git push origin feature/AmazingFeature`）
-5. **开启** Pull Request
-
-请确保：
-- 代码遵循 TypeScript 最佳实践
-- 游戏机制平衡且有趣
-- UI 更改尊重 VS Code 的设计语言
-
----
-
-## 📜 许可证
-
-本项目采用 **MIT 许可证** - 详见 [LICENSE](LICENSE) 文件。
-
----
-
-## 🙏 致谢
-
-- **Microsoft VS Code 团队** - 创造了启发本项目的优秀编辑器
-- **TypeScript** - 让 JavaScript 开发变得可以忍受
-- **React & Vite** - 提供流畅的开发体验
-- **所有我们在现实生活中遇到的 Bug** - 这个游戏献给你们 🪲
-
----
-
-<div align="center">
-
-### 🎮 准备好调试了吗？
-
-**[现在开始游玩！](http://vscode.emerard.me/)**
-
-由开发者制作，献给开发者 ❤️
-
-*"交付代码，而不是 Bug！"*
-
----
-
-⭐ **如果你喜欢这个游戏，请给仓库加星！** | 🐛 **在 Issues 中报告 Bug** | 💬 **与开发者同行分享**
-
-</div>
-
-### 自动验证
+需要 Node.js 20.19+ 或 22.12+。
 
 ```bash
-npm run verify
-npm run test:e2e
-npm run verify:extension
+npm install
+npm run dev          # http://localhost:3000
+npm run verify       # 类型检查、lint、单元测试、构建
+npm run test:e2e     # Playwright（Windows 用 Edge；其他平台：npx playwright install chromium && CI=1 npm run test:e2e）
+npm run deploy       # 先 verify，再把 dist/ 发布到 GitHub Pages
 ```
 
-浏览器测试在 Windows 默认使用本机 Edge，在 CI 使用 Chromium。其他平台可运行 `CI=1 npm run test:e2e`，先执行 `npx playwright install chromium`。测试服务在同一进程中启动和关闭；截图写入忽略的 `artifacts/qa/`。CI 同时覆盖网页、扩展打包检查与隔离的 Extension Host 测试。
+扩展相关检查：`npm run verify:extension` 和 `npm --prefix extension run test:integration`（设置 `VSCODE_EXECUTABLE_PATH` 可复用本机 VS Code）。
 
-扩展在完成升级选择后保存下一波的检查点。重新加载或重启恢复已打开的游戏标签时，会暂停在该波起点；中途弹幕和敌人位置不会保存。新开一局、死亡或通关会清除检查点，但保留局外解锁。普通隐藏/显示仍保留当前战局。详细设计见 [优化说明](docs/optimization-notes.md)。
+```
+App.tsx          工作台外壳：布局状态与组装
+components/      工作台各部件（活动栏、侧栏、标签页、面板、状态栏）与游戏浮层
+game/            模拟层：固定 60 Hz 时钟、玩家、敌人、战斗、成长、渲染
+utils/           多语言、品牌名、音效合成、设置、格式化
+constants.ts     敌人、道具、升级数据
+extension/       VS Code 扩展宿主与 Webview 入口
+```
+
+`game/` 下的玩法逻辑是纯函数并有单元测试，React 只负责工作台。工作台配色是 `tailwind.config.js` 里的 Tailwind 令牌（`vsc-*`、`syntax-*`）。运行时约定和设计决策见 [docs/optimization-notes.md](docs/optimization-notes.md) 与 [docs/gameplay-direction.md](docs/gameplay-direction.md)。
+
+## 许可
+
+[MIT](LICENSE)。与微软无关；谨以此献给现实中打过的每一个 Bug 🪲
