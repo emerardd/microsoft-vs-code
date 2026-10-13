@@ -18,7 +18,7 @@
 <br/>
 
 <a href="http://vscode.emerard.me/">
-  <img src="https://img.shields.io/badge/▶️_立即游玩-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white&labelColor=1f1f1f" height="72" alt="立即游玩" />
+  <img src="https://img.shields.io/badge/▶️_立即游玩-007ACC?style=for-the-badge" width="340" alt="立即游玩" />
 </a>
 
 <br/><br/>
